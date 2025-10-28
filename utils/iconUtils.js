@@ -11,12 +11,12 @@ import {
   Star,
   Heart,
   Coffee,
-  Bug,
-  PawPrint,
-  Bone,
-  PartyPopper,
+  Headset,
   Cat,
   Dog,
+  Panda,
+  Bone,
+  PawPrint,
 } from "lucide-react";
 
 export const ICONS = [
@@ -29,10 +29,10 @@ export const ICONS = [
   { name: "Star", icon: Star },
   { name: "Heart", icon: Heart },
   { name: "Coffee", icon: Coffee },
-  { name: "Bug", icon: Bug },
-  { name: "PawPrint", icon: PawPrint },
-  { name: "Bone", icon: Bone },
-  { name: "PartyPopper", icon: PartyPopper },
+  { name: "Headset", icon: Headset },
   { name: "Cat", icon: Cat },
   { name: "Dog", icon: Dog },
+  { name: "Panda", icon: Panda },
+  { name: "Bone", icon: Bone },
+  { name: "PawPrint", icon: PawPrint },
 ];

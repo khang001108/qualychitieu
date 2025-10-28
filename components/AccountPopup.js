@@ -7,8 +7,7 @@ import {
 } from "firebase/auth";
 import { useState, useEffect } from "react";
 import {
-  X, User, Smile, BadgeDollarSign, HatGlasses, ShieldUser, Moon, Star, Heart,
-  Coffee, Bug, Edit3, Lock, Trash2, CheckCircle2, AlertTriangle, Eye, EyeOff,
+  X, User, Edit3, Lock, Trash2, CheckCircle2, AlertTriangle, Eye, EyeOff,
 } from "lucide-react";
 import { doc, updateDoc, deleteDoc } from "firebase/firestore";
 import { auth, db } from "../lib/firebase";
