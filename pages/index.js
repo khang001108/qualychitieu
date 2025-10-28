@@ -42,10 +42,9 @@ export default function Home() {
   // 📊 Tính tổng thu chi
   const yearData = salary[String(selectedYear)] || {};
   const totalSalaryYear = Object.values(yearData).reduce((a, b) => a + Number(b || 0), 0);
-  const totalExpenseYear = items.filter(i => i.year === selectedYear)
-                                .reduce((s, i) => s + Number(i.amount || 0), 0);
-  const remainingYear = totalSalaryYear - totalExpenseYear;
+  const totalExpenseYear = yearItems.reduce((s, i) => s + Number(i.amount || 0), 0);
 
+  const remainingYear = totalSalaryYear - totalExpenseYear;
   // 👤 Lắng nghe user đăng nhập
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => setUser(u || null));
@@ -296,13 +295,13 @@ export default function Home() {
         <div className="flex flex-col items-center gap-3">
           <div className="flex justify-between w-full">
             <ExpenseMonth selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth}
-                          selectedYear={selectedYear} setSelectedYear={setSelectedYear} />
+              selectedYear={selectedYear} setSelectedYear={setSelectedYear} />
             <Salary user={user} salary={salary} setSalary={setSalary}
-                    selectedMonth={selectedMonth} selectedYear={selectedYear} />
+              selectedMonth={selectedMonth} selectedYear={selectedYear} />
           </div>
           <ExpenseForm user={user} setItems={setItems} selectedMonth={selectedMonth} selectedYear={selectedYear} />
           <ExpenseList user={user} items={items} setItems={setItems}
-                       selectedMonth={selectedMonth} selectedYear={selectedYear} />
+            selectedMonth={selectedMonth} selectedYear={selectedYear} />
           <div ref={chartRef} className="w-full">
             <ExpenseChart items={yearItems} salary={salary} selectedYear={selectedYear} />
           </div>
