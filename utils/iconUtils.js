@@ -1,0 +1,28 @@
+import {
+  User,
+  PencilLine,
+  BanknoteArrowUp,
+  BanknoteArrowDown,
+  Smile,
+  BadgeDollarSign,
+  HatGlasses,
+  ShieldUser,
+  Moon,
+  Star,
+  Heart,
+  Coffee,
+  Bug,
+} from "lucide-react";
+
+export const ICONS = [
+  { name: "User", icon: User },
+  { name: "Smile", icon: Smile },
+  { name: "BadgeDollarSign", icon: BadgeDollarSign },
+  { name: "HatGlasses", icon: HatGlasses },
+  { name: "ShieldUser", icon: ShieldUser },
+  { name: "Moon", icon: Moon },
+  { name: "Star", icon: Star },
+  { name: "Heart", icon: Heart },
+  { name: "Coffee", icon: Coffee },
+  { name: "Bug", icon: Bug },
+];
