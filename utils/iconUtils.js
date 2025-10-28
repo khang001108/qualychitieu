@@ -12,6 +12,11 @@ import {
   Heart,
   Coffee,
   Bug,
+  PawPrint,
+  Bone,
+  PartyPopper,
+  Cat,
+  Dog,
 } from "lucide-react";
 
 export const ICONS = [
@@ -25,4 +30,9 @@ export const ICONS = [
   { name: "Heart", icon: Heart },
   { name: "Coffee", icon: Coffee },
   { name: "Bug", icon: Bug },
+  { name: "PawPrint", icon: PawPrint },
+  { name: "Bone", icon: Bone },
+  { name: "PartyPopper", icon: PartyPopper },
+  { name: "Cat", icon: Cat },
+  { name: "Dog", icon: Dog },
 ];
