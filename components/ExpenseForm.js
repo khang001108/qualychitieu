@@ -58,6 +58,17 @@ export default function ExpenseForm({
         "error"
       );
 
+    // ✅ Kiểm tra ngày có thuộc tháng/năm đang chọn không
+    const d = new Date(date);
+    const formMonth = d.getMonth();
+    const formYear = d.getFullYear();
+    if (
+      formMonth !== Number(selectedMonth) ||
+      formYear !== Number(selectedYear)
+    ) {
+      return showToast("❕ Ngày không thuộc tháng đang chọn", "error");
+    }
+
     const newExpense = {
       userId: user.uid,
       name,
@@ -221,7 +232,7 @@ export default function ExpenseForm({
                       handleChange("date", today.toISOString().split("T")[0]);
                       showToast("✅ Đã chọn ngày hôm nay!", "success");
                     } else {
-                      showToast("❌ Không phải tháng hiện tại", "error");
+                      showToast("❕ Không phải tháng hiện tại", "error");
                     }
                   }}
                   className="text-xs text-orange-600 hover:underline ml-1"
