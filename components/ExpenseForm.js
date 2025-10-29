@@ -28,6 +28,20 @@ export default function ExpenseForm({ user, setItems, selectedMonth, selectedYea
 
   const handleChange = (key, val) => setForm((f) => ({ ...f, [key]: val }));
 
+  // 🔹 Hàm đảm bảo ngày hợp lệ trong tháng
+  const getValidDate = (day, month, year) => {
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const validDay = Math.min(day, daysInMonth);
+    return new Date(year, month, validDay);
+  };
+
+  // 🔹 Cập nhật ngày hợp lệ khi selectedMonth / selectedYear thay đổi
+  useEffect(() => {
+    const currentDay = new Date(form.date).getDate();
+    const newDate = getValidDate(currentDay, selectedMonth, selectedYear);
+    setForm((f) => ({ ...f, date: newDate.toISOString().split("T")[0] }));
+  }, [selectedMonth, selectedYear]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!user) return alert("Vui lòng đăng nhập");
@@ -139,9 +153,9 @@ export default function ExpenseForm({ user, setItems, selectedMonth, selectedYea
                   locale={vi}
                   dateFormat="dd/MM/yyyy"
                   openToDate={new Date(selectedYear, selectedMonth, 1)}
-                  minDate={new Date(selectedYear, selectedMonth, 1)}       // 🔹 ngày đầu tháng
-                  maxDate={new Date(selectedYear, selectedMonth + 1, 0)}   // 🔹 ngày cuối tháng
-                  renderCustomHeader={() => null} // 🔹 ẩn nút next/prev và header tháng
+                  minDate={new Date(selectedYear, selectedMonth, 1)}
+                  maxDate={new Date(selectedYear, selectedMonth + 1, 0)}
+                  renderCustomHeader={() => null} // ẩn nút next/prev và header tháng
                   customInput={
                     <button
                       type="button"
