@@ -24,7 +24,7 @@ export default function ExpenseForm({ user, setItems, selectedMonth, selectedYea
   // 🔹 Khi mở popup hoặc đổi tháng/năm, set ngày mặc định là ngày đầu tháng
   useEffect(() => {
     if (open) {
-      const firstDayOfMonth = new Date(Number(selectedYear), Number(selectedMonth) - 1, 1);
+      const firstDayOfMonth = new Date(Number(selectedYear), Number(selectedMonth), 1);
       const yyyy = firstDayOfMonth.getFullYear();
       const mm = String(firstDayOfMonth.getMonth() + 1).padStart(2, "0");
       const dd = String(firstDayOfMonth.getDate()).padStart(2, "0");
