@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react"; 
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "../lib/firebase";
-import { CalendarDays, CirclePlus, PencilLine, BanknoteArrowDown } from "lucide-react";
+import { CalendarDays, CirclePlus, PencilLine, BanknoteArrowDown, X } from "lucide-react";
 import DatePicker from "react-datepicker";
 import { vi } from "date-fns/locale";
 import "react-datepicker/dist/react-datepicker.css";
@@ -11,6 +11,7 @@ export default function ExpenseForm({ user, setItems, selectedMonth, selectedYea
   const [form, setForm] = useState({ name: "", amount: "", date: new Date().toISOString().split("T")[0] });
   const [open, setOpen] = useState(false);
   const [toast, setToast] = useState({ message: "", type: "info" });
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const modalRef = useRef();
   const MAX_AMOUNT = 999_999_999_999;
 
@@ -149,29 +150,53 @@ export default function ExpenseForm({ user, setItems, selectedMonth, selectedYea
                   Ngày chi:
                 </span>
 
-                <DatePicker
-                  selected={new Date(form.date)}
-                  onChange={(d) => handleChange("date", d.toISOString().split("T")[0])}
-                  locale={vi}
-                  dateFormat="dd/MM/yyyy"
-                  openToDate={new Date(selectedYear, selectedMonth, 1)}
-                  minDate={new Date(selectedYear, selectedMonth, 1)}
-                  maxDate={new Date(selectedYear, selectedMonth + 1, 0)}
-                  shouldCloseOnSelect
-                  withPortal={false}
-                  customInput={
-                    <button
-                      type="button"
-                      className="bg-white border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 flex items-center gap-2 shadow-sm transition"
-                    >
-                      📅 Chọn ngày
-                    </button>
-                  }
-                />
+                <div className="relative">
+                  <DatePicker
+                    selected={new Date(form.date)}
+                    onChange={(d) => {
+                      handleChange("date", d.toISOString().split("T")[0]);
+                      setIsCalendarOpen(false);
+                    }}
+                    locale={vi}
+                    dateFormat="dd/MM/yyyy"
+                    open={isCalendarOpen}
+                    onClickOutside={() => setIsCalendarOpen(false)}
+                    openToDate={new Date(selectedYear, selectedMonth, 1)}
+                    minDate={new Date(selectedYear, selectedMonth, 1)}
+                    maxDate={new Date(selectedYear, selectedMonth + 1, 0)}
+                    shouldCloseOnSelect
+                    renderCustomHeader={({ date, decreaseMonth, increaseMonth }) => (
+                      <div className="flex justify-between items-center px-2 py-1 border-b">
+                        <button onClick={decreaseMonth} className="text-gray-500 hover:text-black px-2">‹</button>
+                        <span className="text-sm font-medium">
+                          Tháng {date.getMonth() + 1} / {date.getFullYear()}
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <button onClick={increaseMonth} className="text-gray-500 hover:text-black px-2">›</button>
+                          <button onClick={() => setIsCalendarOpen(false)} className="text-gray-500 hover:text-red-500">
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                    customInput={
+                      <button
+                        type="button"
+                        onClick={() => setIsCalendarOpen((prev) => !prev)}
+                        className="bg-white border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 flex items-center gap-2 shadow-sm transition"
+                      >
+                        📅 {form.date ? new Date(form.date).toLocaleDateString("vi-VN") : "Chọn ngày"}
+                      </button>
+                    }
+                  />
+                </div>
 
                 <button
                   type="button"
-                  onClick={() => handleChange("date", new Date().toISOString().split("T")[0])}
+                  onClick={() => {
+                    const today = new Date();
+                    handleChange("date", today.toISOString().split("T")[0]);
+                  }}
                   className="text-xs text-orange-600 hover:underline ml-1"
                 >
                   Hôm nay
