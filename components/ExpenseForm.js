@@ -6,7 +6,8 @@ import DatePicker from "react-datepicker";
 import { vi } from "date-fns/locale";
 import "react-datepicker/dist/react-datepicker.css";
 import Toast from "./Toast";
-import "./datepicker-animate.css"; // 🔹 Thêm hiệu ứng CSS riêng
+//import "./datepicker-animate.css"; // 🔹 Thêm hiệu ứng CSS riêng
+import "@/styles/globals.css";
 
 export default function ExpenseForm({ user, setItems, selectedMonth, selectedYear }) {
   const [form, setForm] = useState({ name: "", amount: "", date: new Date().toISOString().split("T")[0] });
