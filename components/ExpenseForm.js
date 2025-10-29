@@ -25,16 +25,15 @@ export default function ExpenseForm({ user, setItems, selectedMonth, selectedYea
   // 🔹 Khi mở popup hoặc đổi tháng/năm, set ngày mặc định
   useEffect(() => {
     if (open) {
-      const firstDayOfMonth = new Date(Number(selectedYear), Number(selectedMonth) - 1, 1); // fix lùi 1 tháng
+      const firstDayOfMonth = new Date(Number(selectedYear), Number(selectedMonth), 1);
       setForm((f) => ({ ...f, date: firstDayOfMonth.toISOString().split("T")[0] }));
     }
   }, [open, selectedMonth, selectedYear]);
-  
-  // Trong handleSubmit
-  const selectedDate = new Date(date);
-  if (selectedDate.getMonth() !== Number(selectedMonth) - 1 || selectedDate.getFullYear() !== Number(selectedYear)) {
-    return showToast(`Ngày phải thuộc tháng ${Number(selectedMonth)} / ${selectedYear}`, "error");
-  }
+
+  const showToast = (message, type = "info") => {
+    setToast({ message, type });
+    setTimeout(() => setToast({ message: "", type: "info" }), 3000);
+  };
 
   const handleChange = (key, val) => setForm((f) => ({ ...f, [key]: val }));
 
