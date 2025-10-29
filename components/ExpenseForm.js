@@ -116,6 +116,7 @@ export default function ExpenseForm({ user, setItems, selectedMonth, selectedYea
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-3">
+              {/* 🔸 Ô nhập tên khoản chi */}
               <div className="relative">
                 <PencilLine className="absolute right-3 top-3 text-gray-400 w-5 h-5" />
                 <input
@@ -123,9 +124,10 @@ export default function ExpenseForm({ user, setItems, selectedMonth, selectedYea
                   placeholder="Tên khoản chi"
                   value={form.name}
                   onChange={(e) => handleChange("name", e.target.value)}
-                  autoFocus
                 />
               </div>
+
+              {/* 🔸 Ô nhập số tiền */}
               <div className="relative">
                 <BanknoteArrowDown className="absolute right-3 top-3 text-gray-400 w-5 h-5" />
                 <input
@@ -155,13 +157,14 @@ export default function ExpenseForm({ user, setItems, selectedMonth, selectedYea
                   openToDate={new Date(selectedYear, selectedMonth, 1)}
                   minDate={new Date(selectedYear, selectedMonth, 1)}
                   maxDate={new Date(selectedYear, selectedMonth + 1, 0)}
-                  renderCustomHeader={() => null} // ẩn nút next/prev và header tháng
+                  shouldCloseOnSelect
+                  withPortal={false}
                   customInput={
                     <button
                       type="button"
                       className="bg-white border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 flex items-center gap-2 shadow-sm transition"
                     >
-                      {new Date(form.date).toLocaleDateString("vi-VN")}
+                      📅 Chọn ngày
                     </button>
                   }
                 />
@@ -177,8 +180,12 @@ export default function ExpenseForm({ user, setItems, selectedMonth, selectedYea
 
               {/* Thông tin tháng / năm */}
               <div className="flex justify-between items-center text-sm text-gray-500">
-                <span>Tháng Tiêu: {Number(selectedMonth) + 1} / {selectedYear}</span>
-                <span className="italic">Ngày Tạo: {new Date(form.date).toLocaleDateString("vi-VN")}</span>
+                <span>
+                  Tháng Tiêu: {Number(selectedMonth) + 1} / {selectedYear}
+                </span>
+                <span className="italic">
+                  Ngày Tạo: {new Date(form.date).toLocaleDateString("vi-VN")}
+                </span>
               </div>
 
               {/* Nút hành động */}
@@ -186,7 +193,11 @@ export default function ExpenseForm({ user, setItems, selectedMonth, selectedYea
                 <button type="submit" className="flex-1 bg-orange-500 text-white py-2 rounded hover:brightness-110">
                   Thêm
                 </button>
-                <button type="button" onClick={() => setOpen(false)} className="flex-1 bg-gray-200 py-2 rounded hover:bg-gray-300">
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  className="flex-1 bg-gray-200 py-2 rounded hover:bg-gray-300"
+                >
                   Hủy
                 </button>
               </div>
@@ -196,7 +207,9 @@ export default function ExpenseForm({ user, setItems, selectedMonth, selectedYea
       )}
 
       {/* Toast ẩn */}
-      {toast.message && <Toast message={toast.message} type={toast.type} onClose={() => setToast({ message: "", type: "info" })} />}
+      {toast.message && (
+        <Toast message={toast.message} type={toast.type} onClose={() => setToast({ message: "", type: "info" })} />
+      )}
     </>
   );
 }
