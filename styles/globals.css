@@ -103,3 +103,21 @@ input[type="password"] {
 .animate-bounce-slow {
   animation: bounce-slow 2.5s infinite ease-in-out;
 }
+
+/* ==== DatePicker Animation (từ datepicker-animate.css) ==== */
+
+@keyframes datepicker-fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.react-datepicker,
+.react-datepicker__month-container {
+  animation: datepicker-fadeIn 0.25s ease-in-out;
+}
