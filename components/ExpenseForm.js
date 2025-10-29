@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react"; 
+import { useState, useRef, useEffect } from "react";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { CalendarDays, CirclePlus, PencilLine, BanknoteArrowDown } from "lucide-react";
@@ -6,6 +6,7 @@ import DatePicker from "react-datepicker";
 import { vi } from "date-fns/locale";
 import "react-datepicker/dist/react-datepicker.css";
 import Toast from "./Toast";
+import "./datepicker-animate.css"; // 🔹 Thêm hiệu ứng CSS riêng
 
 export default function ExpenseForm({ user, setItems, selectedMonth, selectedYear }) {
   const [form, setForm] = useState({ name: "", amount: "", date: new Date().toISOString().split("T")[0] });
@@ -28,14 +29,14 @@ export default function ExpenseForm({ user, setItems, selectedMonth, selectedYea
 
   const handleChange = (key, val) => setForm((f) => ({ ...f, [key]: val }));
 
-  // 🔹 Hàm đảm bảo ngày hợp lệ trong tháng
+  // 🔹 Ngày hợp lệ trong tháng
   const getValidDate = (day, month, year) => {
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const validDay = Math.min(day, daysInMonth);
     return new Date(year, month, validDay);
   };
 
-  // 🔹 Cập nhật ngày hợp lệ khi selectedMonth / selectedYear thay đổi
+  // 🔹 Cập nhật ngày khi đổi tháng / năm
   useEffect(() => {
     const currentDay = new Date(form.date).getDate();
     const newDate = getValidDate(currentDay, selectedMonth, selectedYear);
@@ -77,7 +78,7 @@ export default function ExpenseForm({ user, setItems, selectedMonth, selectedYea
 
   return (
     <>
-      {/* 🔹 Toast nổi */}
+      {/* 🔹 Toast */}
       {toast.message && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 bg-orange-500 text-white px-4 py-2 rounded-lg shadow-lg text-sm animate-fade-in-out z-[9999]">
           {toast.message}
@@ -104,7 +105,7 @@ export default function ExpenseForm({ user, setItems, selectedMonth, selectedYea
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
           <div
             ref={modalRef}
-            className="relative bg-white w-11/12 max-w-md p-6 rounded-xl shadow-2xl z-10"
+            className="relative bg-white w-11/12 max-w-md p-6 rounded-xl shadow-2xl z-10 animate-fade-slide-down"
             onMouseDown={(e) => e.stopPropagation()}
           >
             {/* Header */}
@@ -116,6 +117,7 @@ export default function ExpenseForm({ user, setItems, selectedMonth, selectedYea
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-3">
+              {/* Tên khoản chi */}
               <div className="relative">
                 <PencilLine className="absolute right-3 top-3 text-gray-400 w-5 h-5" />
                 <input
@@ -126,6 +128,8 @@ export default function ExpenseForm({ user, setItems, selectedMonth, selectedYea
                   autoFocus
                 />
               </div>
+
+              {/* Số tiền */}
               <div className="relative">
                 <BanknoteArrowDown className="absolute right-3 top-3 text-gray-400 w-5 h-5" />
                 <input
@@ -155,13 +159,33 @@ export default function ExpenseForm({ user, setItems, selectedMonth, selectedYea
                   openToDate={new Date(selectedYear, selectedMonth, 1)}
                   minDate={new Date(selectedYear, selectedMonth, 1)}
                   maxDate={new Date(selectedYear, selectedMonth + 1, 0)}
-                  renderCustomHeader={() => null} // ẩn nút next/prev và header tháng
+                  shouldCloseOnSelect={true}
+                  showPopperArrow={false}
+                  popperClassName="datepicker-anim" // 🔹 Áp hiệu ứng
+                  onClickOutside={() => document.activeElement?.blur()}
+                  popperPlacement="bottom-start"
+                  renderCustomHeader={({ closeDatePicker }) => (
+                    <div className="flex justify-end p-1">
+                      <button
+                        type="button"
+                        onClick={closeDatePicker}
+                        className="text-gray-500 text-xs px-2 py-1 hover:text-gray-800"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
                   customInput={
                     <button
                       type="button"
+                      onClick={(e) => e.preventDefault()}
                       className="bg-white border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 flex items-center gap-2 shadow-sm transition"
                     >
-                      {new Date(form.date).toLocaleDateString("vi-VN")}
+                      {form.date ? (
+                        new Date(form.date).toLocaleDateString("vi-VN")
+                      ) : (
+                        <span className="text-gray-400">...</span>
+                      )}
                     </button>
                   }
                 />
@@ -177,8 +201,12 @@ export default function ExpenseForm({ user, setItems, selectedMonth, selectedYea
 
               {/* Thông tin tháng / năm */}
               <div className="flex justify-between items-center text-sm text-gray-500">
-                <span>Tháng Tiêu: {Number(selectedMonth) + 1} / {selectedYear}</span>
-                <span className="italic">Ngày Tạo: {new Date(form.date).toLocaleDateString("vi-VN")}</span>
+                <span>
+                  Tháng Tiêu: {Number(selectedMonth) + 1} / {selectedYear}
+                </span>
+                <span className="italic">
+                  Ngày Tạo: {new Date(form.date).toLocaleDateString("vi-VN")}
+                </span>
               </div>
 
               {/* Nút hành động */}
@@ -186,7 +214,11 @@ export default function ExpenseForm({ user, setItems, selectedMonth, selectedYea
                 <button type="submit" className="flex-1 bg-orange-500 text-white py-2 rounded hover:brightness-110">
                   Thêm
                 </button>
-                <button type="button" onClick={() => setOpen(false)} className="flex-1 bg-gray-200 py-2 rounded hover:bg-gray-300">
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  className="flex-1 bg-gray-200 py-2 rounded hover:bg-gray-300"
+                >
                   Hủy
                 </button>
               </div>
@@ -195,8 +227,7 @@ export default function ExpenseForm({ user, setItems, selectedMonth, selectedYea
         </div>
       )}
 
-      {/* Toast ẩn */}
       {toast.message && <Toast message={toast.message} type={toast.type} onClose={() => setToast({ message: "", type: "info" })} />}
     </>
   );
-}
+    }
