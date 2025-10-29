@@ -13,17 +13,14 @@ body {
     opacity: 0;
     transform: translateY(-10px);
   }
-
   10% {
     opacity: 1;
     transform: translateY(0);
   }
-
   90% {
     opacity: 1;
     transform: translateY(0);
   }
-
   100% {
     opacity: 0;
     transform: translateY(-10px);
@@ -110,7 +107,7 @@ input[type="password"] {
   animation: datepicker-fadeIn 0.25s ease-in-out;
 }
 
-/* ==== DatePicker Style Fix ==== */
+/* ==== DatePicker Style ==== */
 .react-datepicker {
   font-family: inherit;
   border-radius: 12px;
@@ -126,19 +123,26 @@ input[type="password"] {
 }
 
 .react-datepicker__day--selected {
-  background-color: #3b82f6 !important;
+  background-color: #f97316 !important; /* orange-500 */
   color: white !important;
   border-radius: 50%;
 }
 
 .react-datepicker__day:hover {
-  background-color: #e0f2fe !important;
+  background-color: #ffedd5 !important; /* orange-100 */
   border-radius: 50%;
 }
 
-/* Ẩn dropdown chọn tháng/năm nhưng giữ lịch ngày */
+/* ==== Ẩn mũi tên điều hướng tháng ==== */
+.react-datepicker__navigation--previous,
+.react-datepicker__navigation--next {
+  display: none !important;
+}
+
+/* (Tuỳ chọn) Nếu bạn muốn ẩn dropdown chọn tháng/năm thì bật đoạn này */
 .react-datepicker__header__dropdown,
 .react-datepicker__month-dropdown-container,
 .react-datepicker__year-dropdown-container {
   display: none !important;
 }
+
