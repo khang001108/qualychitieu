@@ -139,7 +139,6 @@ export default function ExpenseForm({
                   placeholder="Tên khoản chi"
                   value={form.name}
                   onChange={(e) => handleChange("name", e.target.value)}
-                  autoFocus
                 />
               </div>
 
