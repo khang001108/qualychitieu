@@ -146,3 +146,7 @@ input[type="password"] {
   display: none !important;
 }
 
+/* ==== Fix DatePicker hiển thị trong modal ==== */
+.react-datepicker-popper {
+  z-index: 9999 !important;
+}
