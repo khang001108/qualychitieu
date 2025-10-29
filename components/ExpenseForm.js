@@ -6,7 +6,7 @@ import DatePicker from "react-datepicker";
 import { vi } from "date-fns/locale";
 import "react-datepicker/dist/react-datepicker.css";
 import Toast from "./Toast";
-import { PencilLine, BanknoteArrowUp, BanknoteArrowDown } from "lucide-react";
+import { PencilLine, BanknoteArrowDown } from "lucide-react";
 
 export default function ExpenseForm({ user, setItems, selectedMonth, selectedYear }) {
   const [form, setForm] = useState({ name: "", amount: "", date: new Date().toISOString().split("T")[0] });
@@ -21,6 +21,14 @@ export default function ExpenseForm({ user, setItems, selectedMonth, selectedYea
     document.addEventListener("keydown", closeOnEsc);
     return () => document.removeEventListener("keydown", closeOnEsc);
   }, []);
+
+  // 🔹 Khi mở popup hoặc đổi tháng/năm, set ngày mặc định
+  useEffect(() => {
+    if (open) {
+      const firstDayOfMonth = new Date(Number(selectedYear), Number(selectedMonth), 1);
+      setForm((f) => ({ ...f, date: firstDayOfMonth.toISOString().split("T")[0] }));
+    }
+  }, [open, selectedMonth, selectedYear]);
 
   const showToast = (message, type = "info") => {
     setToast({ message, type });
