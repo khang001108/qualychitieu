@@ -138,7 +138,10 @@ export default function ExpenseForm({ user, setItems, selectedMonth, selectedYea
                   onChange={(d) => handleChange("date", d.toISOString().split("T")[0])}
                   locale={vi}
                   dateFormat="dd/MM/yyyy"
-                  openToDate={new Date(selectedYear, selectedMonth, 1)} // 🔹 Mở đúng tháng/năm
+                  openToDate={new Date(selectedYear, selectedMonth, 1)}
+                  minDate={new Date(selectedYear, selectedMonth, 1)}       // 🔹 ngày đầu tháng
+                  maxDate={new Date(selectedYear, selectedMonth + 1, 0)}   // 🔹 ngày cuối tháng
+                  renderCustomHeader={() => null} // 🔹 ẩn nút next/prev và header tháng
                   customInput={
                     <button
                       type="button"
