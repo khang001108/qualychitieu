@@ -1,12 +1,11 @@
 import { useState, useRef, useEffect } from "react";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "../lib/firebase";
-import { CalendarDays, CirclePlus } from "lucide-react";
+import { CalendarDays, CirclePlus, PencilLine, BanknoteArrowDown } from "lucide-react";
 import DatePicker from "react-datepicker";
 import { vi } from "date-fns/locale";
 import "react-datepicker/dist/react-datepicker.css";
 import Toast from "./Toast";
-import { PencilLine, BanknoteArrowDown } from "lucide-react";
 
 export default function ExpenseForm({ user, setItems, selectedMonth, selectedYear }) {
   const [form, setForm] = useState({ name: "", amount: "", date: "" });
@@ -26,7 +25,10 @@ export default function ExpenseForm({ user, setItems, selectedMonth, selectedYea
   useEffect(() => {
     if (open) {
       const firstDayOfMonth = new Date(Number(selectedYear), Number(selectedMonth) - 1, 1);
-      setForm((f) => ({ ...f, date: firstDayOfMonth.toISOString().split("T")[0] }));
+      const yyyy = firstDayOfMonth.getFullYear();
+      const mm = String(firstDayOfMonth.getMonth() + 1).padStart(2, "0");
+      const dd = String(firstDayOfMonth.getDate()).padStart(2, "0");
+      setForm((f) => ({ ...f, date: `${yyyy}-${mm}-${dd}` }));
     }
   }, [open, selectedMonth, selectedYear]);
 
@@ -49,12 +51,11 @@ export default function ExpenseForm({ user, setItems, selectedMonth, selectedYea
     if (amountNum > MAX_AMOUNT)
       return showToast(`Số tiền không được vượt quá ${MAX_AMOUNT.toLocaleString()}₫`, "error");
 
+    const [yyyy, mm, dd] = date.split("-").map(Number);
+    const selectedDate = new Date(yyyy, mm - 1, dd);
+
     // 🔹 Kiểm tra ngày có thuộc tháng/năm đang chọn không
-    const selectedDate = new Date(date);
-    if (
-      selectedDate.getMonth() !== Number(selectedMonth) - 1 ||
-      selectedDate.getFullYear() !== Number(selectedYear)
-    ) {
+    if (selectedDate.getMonth() !== Number(selectedMonth) - 1 || selectedDate.getFullYear() !== Number(selectedYear)) {
       return showToast(`Ngày phải thuộc tháng ${Number(selectedMonth)} / ${selectedYear}`, "error");
     }
 
@@ -71,7 +72,11 @@ export default function ExpenseForm({ user, setItems, selectedMonth, selectedYea
     try {
       const ref = await addDoc(collection(db, "expenses"), newExpense);
       setItems((prev) => [{ id: ref.id, ...newExpense }, ...prev]);
-      setForm({ name: "", amount: "", date: new Date().toISOString().split("T")[0] });
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, "0");
+      const dd = String(today.getDate()).padStart(2, "0");
+      setForm({ name: "", amount: "", date: `${yyyy}-${mm}-${dd}` });
       setOpen(false);
       showToast("Bạn đã thêm một khoản chi mới!", "success");
     } catch (err) {
@@ -80,8 +85,16 @@ export default function ExpenseForm({ user, setItems, selectedMonth, selectedYea
     }
   };
 
-  // 🔹 DatePicker wrapper tránh crash nếu form.date undefined
-  const dateValue = form.date ? new Date(form.date) : new Date(Number(selectedYear), Number(selectedMonth) - 1, 1);
+  // 🔹 DatePicker value
+  const dateValue = (() => {
+    if (!form.date) return new Date(Number(selectedYear), Number(selectedMonth) - 1, 1);
+    const [yyyy, mm, dd] = form.date.split("-").map(Number);
+    return new Date(yyyy, mm - 1, dd);
+  })();
+
+  // 🔹 Ngày đầu và cuối tháng để giới hạn
+  const minDate = new Date(Number(selectedYear), Number(selectedMonth) - 1, 1);
+  const maxDate = new Date(Number(selectedYear), Number(selectedMonth), 0);
 
   return (
     <>
@@ -157,11 +170,16 @@ export default function ExpenseForm({ user, setItems, selectedMonth, selectedYea
 
                 <DatePicker
                   selected={dateValue}
-                  onChange={(d) => handleChange("date", d.toISOString().split("T")[0])}
+                  onChange={(d) => {
+                    const yyyy = d.getFullYear();
+                    const mm = String(d.getMonth() + 1).padStart(2, "0");
+                    const dd = String(d.getDate()).padStart(2, "0");
+                    handleChange("date", `${yyyy}-${mm}-${dd}`);
+                  }}
                   locale={vi}
                   dateFormat="dd/MM/yyyy"
-                  minDate={new Date(Number(selectedYear), Number(selectedMonth) - 1, 1)}
-                  maxDate={new Date(Number(selectedYear), Number(selectedMonth), 0)}
+                  minDate={minDate}
+                  maxDate={maxDate}
                   customInput={
                     <button
                       type="button"
@@ -174,7 +192,13 @@ export default function ExpenseForm({ user, setItems, selectedMonth, selectedYea
 
                 <button
                   type="button"
-                  onClick={() => handleChange("date", new Date().toISOString().split("T")[0])}
+                  onClick={() => {
+                    const today = new Date();
+                    const yyyy = today.getFullYear();
+                    const mm = String(today.getMonth() + 1).padStart(2, "0");
+                    const dd = String(today.getDate()).padStart(2, "0");
+                    handleChange("date", `${yyyy}-${mm}-${dd}`);
+                  }}
                   className="text-xs text-orange-600 hover:underline ml-1"
                 >
                   Hôm nay
