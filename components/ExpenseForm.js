@@ -177,6 +177,7 @@ export default function ExpenseForm({
                   showMonthDropdown
                   showYearDropdown
                   dropdownMode="select"
+                  portalId="root-portal"
                   customInput={
                     <button
                       type="button"
