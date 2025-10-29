@@ -10,6 +10,7 @@ import {
 import DatePicker from "react-datepicker";
 import { vi } from "date-fns/locale";
 import "react-datepicker/dist/react-datepicker.css";
+import Toast from "./Toast";
 
 export default function ExpenseForm({
   user,
@@ -17,16 +18,15 @@ export default function ExpenseForm({
   selectedMonth,
   selectedYear,
 }) {
-  const today = new Date();
   const [form, setForm] = useState({
     name: "",
     amount: "",
-    date: today.toISOString().split("T")[0],
+    date: new Date().toISOString().split("T")[0],
   });
+
   const [open, setOpen] = useState(false);
   const [toast, setToast] = useState({ message: "", type: "info" });
   const modalRef = useRef();
-  const datePickerRef = useRef();
   const MAX_AMOUNT = 999_999_999_999;
 
   // 🔹 Đóng popup khi nhấn ESC
@@ -36,65 +36,31 @@ export default function ExpenseForm({
     return () => document.removeEventListener("keydown", closeOnEsc);
   }, []);
 
-  // 🔹 Đóng DatePicker khi click ra ngoài
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (datePickerRef.current && !datePickerRef.current.contains(e.target)) {
-        document.activeElement.blur();
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   const showToast = (message, type = "info") => {
     setToast({ message, type });
-    setTimeout(() => setToast({ message: "", type: "info" }), 2500);
+    setTimeout(() => setToast({ message: "", type: "info" }), 3000);
   };
 
-  const handleChange = (key, val) =>
-    setForm((f) => ({
-      ...f,
-      [key]: val,
-    }));
-
-  // 🔹 Hàm lấy ngày hợp lệ trong tháng
-  const getValidDate = (day, month, year) => {
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const validDay = Math.min(day, daysInMonth);
-    return new Date(year, month, validDay);
-  };
-
-  // 🔹 Cập nhật ngày khi đổi tháng/năm
-  useEffect(() => {
-    if (!form.date) return;
-    const d = new Date(form.date);
-    if (isNaN(d)) return;
-    const currentDay = d.getDate();
-    const newDate = getValidDate(currentDay, selectedMonth, selectedYear);
-    setForm((f) => ({ ...f, date: newDate.toISOString().split("T")[0] }));
-  }, [selectedMonth, selectedYear]);
+  const handleChange = (key, val) => setForm((f) => ({ ...f, [key]: val }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!user) return alert("Vui lòng đăng nhập");
-
     const { name, amount, date } = form;
     const amountNum = Number(amount);
 
-    if (!name.trim() || !amount)
-      return showToast("Nhập đầy đủ thông tin", "error");
+    if (!name || !amount) return showToast("Nhập đầy đủ thông tin", "error");
     if (isNaN(amountNum) || amountNum <= 0)
       return showToast("Số tiền không hợp lệ", "error");
     if (amountNum > MAX_AMOUNT)
       return showToast(
-        `Số tiền không được vượt quá ${MAX_AMOUNT.toLocaleString("vi-VN")}₫`,
+        `Số tiền không được vượt quá ${MAX_AMOUNT.toLocaleString()}₫`,
         "error"
       );
 
     const newExpense = {
       userId: user.uid,
-      name: name.trim(),
+      name,
       amount: amountNum,
       date: new Date(date).toISOString(),
       month: Number(selectedMonth),
@@ -108,10 +74,10 @@ export default function ExpenseForm({
       setForm({
         name: "",
         amount: "",
-        date: today.toISOString().split("T")[0],
+        date: new Date().toISOString().split("T")[0],
       });
       setOpen(false);
-      showToast("Đã thêm khoản chi mới!", "success");
+      showToast("Bạn đã thêm một khoản chi mới!", "success");
     } catch (err) {
       console.error("Lỗi thêm:", err);
       showToast("Thêm thất bại", "error");
@@ -120,17 +86,9 @@ export default function ExpenseForm({
 
   return (
     <>
-      {/* 🔹 Toast */}
+      {/* 🔹 Toast nổi */}
       {toast.message && (
-        <div
-          className={`fixed top-5 left-1/2 -translate-x-1/2 px-4 py-2 rounded-lg shadow-md text-sm text-white z-[9999] transition-all duration-300 ${
-            toast.type === "success"
-              ? "bg-green-500"
-              : toast.type === "error"
-              ? "bg-red-500"
-              : "bg-orange-500"
-          }`}
-        >
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 bg-orange-500 text-white px-4 py-2 rounded-lg shadow-lg text-sm animate-fade-in-out z-[9999]">
           {toast.message}
         </div>
       )}
@@ -139,7 +97,7 @@ export default function ExpenseForm({
       <div className="flex justify-end">
         <button
           onClick={() => setOpen(true)}
-          className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-5 py-2.5 rounded-xl shadow-md hover:brightness-110 active:scale-95 transition-all duration-200"
+          className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg hover:brightness-110 active:scale-95 transition-all duration-200"
         >
           <CirclePlus className="w-5 h-5" />
           Thêm khoản chi
@@ -174,7 +132,6 @@ export default function ExpenseForm({
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-3">
-              {/* 🔸 Tên khoản chi */}
               <div className="relative">
                 <PencilLine className="absolute right-3 top-3 text-gray-400 w-5 h-5" />
                 <input
@@ -182,22 +139,20 @@ export default function ExpenseForm({
                   placeholder="Tên khoản chi"
                   value={form.name}
                   onChange={(e) => handleChange("name", e.target.value)}
+                  autoFocus
                 />
               </div>
 
-              {/* 🔸 Số tiền */}
               <div className="relative">
                 <BanknoteArrowDown className="absolute right-3 top-3 text-gray-400 w-5 h-5" />
                 <input
                   className="w-full border p-2 rounded text-left"
                   placeholder="Số tiền"
-                  value={
-                    form.amount
-                      ? Number(form.amount).toLocaleString("vi-VN")
-                      : ""
-                  }
+                  value={form.amount
+                    .toString()
+                    .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
                   onChange={(e) => {
-                    const raw = e.target.value.replace(/[^\d]/g, "");
+                    const raw = e.target.value.replace(/,/g, "");
                     if (/^\d*$/.test(raw)) handleChange("amount", raw);
                   }}
                   inputMode="numeric"
@@ -205,64 +160,87 @@ export default function ExpenseForm({
               </div>
 
               {/* 🔹 Chọn ngày */}
-              <div className="flex items-center gap-3" ref={datePickerRef}>
+              <div className="flex items-center gap-3">
                 <span className="text-sm text-gray-600 flex items-center gap-1">
                   <CalendarDays className="w-4 h-4 text-orange-500" />
                   Ngày chi:
                 </span>
 
                 <DatePicker
-                  selected={
-                    form.date
-                      ? new Date(form.date)
-                      : new Date(selectedYear, selectedMonth, 1)
-                  }
+                  selected={new Date(form.date)}
                   onChange={(d) =>
                     handleChange("date", d.toISOString().split("T")[0])
                   }
                   locale={vi}
                   dateFormat="dd/MM/yyyy"
-                  minDate={new Date(selectedYear, selectedMonth, 1)}
-                  maxDate={new Date(selectedYear, selectedMonth + 1, 0)}
-                  shouldCloseOnSelect
-                  showPopperArrow={false}
-                  withPortal={false}
-                  className="hidden"
+                  openToDate={new Date(selectedYear, selectedMonth, 1)}
+                  showMonthDropdown
+                  showYearDropdown
+                  dropdownMode="select"
                   customInput={
                     <button
                       type="button"
                       className="bg-white border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 flex items-center gap-2 shadow-sm transition"
                     >
-                      📅 {new Date(form.date).toLocaleDateString("vi-VN")}
+                      {(() => {
+                        if (!form.date)
+                          return `? / ${
+                            Number(selectedMonth) + 1
+                          } / ${selectedYear}`;
+
+                        const d = new Date(form.date);
+                        const formMonth = d.getMonth();
+                        const formYear = d.getFullYear();
+
+                        if (
+                          formMonth === Number(selectedMonth) &&
+                          formYear === Number(selectedYear)
+                        ) {
+                          return d.toLocaleDateString("vi-VN");
+                        } else {
+                          return `? / ${
+                            Number(selectedMonth) + 1
+                          } / ${selectedYear}`;
+                        }
+                      })()}
                     </button>
                   }
                 />
 
                 <button
                   type="button"
-                  onClick={() =>
-                    handleChange("date", new Date().toISOString().split("T")[0])
-                  }
+                  onClick={() => {
+                    const today = new Date();
+                    const todayMonth = today.getMonth();
+                    const todayYear = today.getFullYear();
+
+                    if (
+                      todayMonth === Number(selectedMonth) &&
+                      todayYear === Number(selectedYear)
+                    ) {
+                      handleChange("date", today.toISOString().split("T")[0]);
+                      showToast("✅ Đã chọn ngày hôm nay!", "success");
+                    } else {
+                      showToast("❌ Không phải tháng hiện tại", "error");
+                    }
+                  }}
                   className="text-xs text-orange-600 hover:underline ml-1"
                 >
                   Hôm nay
                 </button>
               </div>
 
-              {/* 🔹 Thông tin tháng / năm */}
+              {/* Thông tin tháng / năm */}
               <div className="flex justify-between items-center text-sm text-gray-500">
                 <span>
                   Tháng tiêu: {Number(selectedMonth) + 1} / {selectedYear}
                 </span>
                 <span className="italic">
-                  Ngày chi:{" "}
-                  {form.date
-                    ? new Date(form.date).toLocaleDateString("vi-VN")
-                    : "-"}
+                  Ngày tạo: {new Date(form.date).toLocaleDateString("vi-VN")}
                 </span>
               </div>
 
-              {/* 🔹 Nút hành động */}
+              {/* Nút hành động */}
               <div className="flex gap-2">
                 <button
                   type="submit"
@@ -281,6 +259,15 @@ export default function ExpenseForm({
             </form>
           </div>
         </div>
+      )}
+
+      {/* 🔹 Toast riêng */}
+      {toast.message && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast({ message: "", type: "info" })}
+        />
       )}
     </>
   );

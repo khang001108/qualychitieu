@@ -1,4 +1,4 @@
-// app/Toast.js
+// components/Toast.js
 import { useEffect } from "react";
 
 export default function Toast({ message, type = "info", onClose }) {
