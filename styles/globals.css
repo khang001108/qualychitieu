@@ -2,11 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
-/* small custom */
+/* ===== Base ===== */
 body {
   @apply bg-gray-100;
 }
 
+/* ==== Toast Animation ==== */
 @keyframes fade-in-out {
   0% {
     opacity: 0;
@@ -30,12 +31,10 @@ body {
 }
 
 .animate-fade-in-out {
-  animation: fade-in-out 3s ease forwards;
   animation: fade-in-out 3s ease infinite;
-
 }
 
-/* Ẩn icon "mắt" mặc định và nút xóa của Chrome/Edge */
+/* ==== Password Field Fix ==== */
 input[type="password"]::-ms-reveal,
 input[type="password"]::-ms-clear,
 input[type="password"]::-webkit-clear-button,
@@ -44,18 +43,17 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
   appearance: none;
 }
 
-/* Ngăn Safari/Firefox hiển thị biểu tượng riêng */
 input[type="password"] {
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
 }
 
+/* ==== Common Animations ==== */
 @keyframes fadeIn {
   from {
     opacity: 0;
   }
-
   to {
     opacity: 1;
   }
@@ -66,7 +64,6 @@ input[type="password"] {
     transform: scale(0.9);
     opacity: 0;
   }
-
   100% {
     transform: scale(1);
     opacity: 1;
@@ -74,38 +71,29 @@ input[type="password"] {
 }
 
 @keyframes bounce-slow {
-
-  0%,
-  100% {
+  0%, 100% {
     transform: translateY(0);
   }
-
   50% {
     transform: translateY(-5px);
   }
 }
 
 @layer utilities {
+  .animate-fadeIn {
+    animation: fadeIn 0.25s ease-out forwards;
+  }
+
+  .animate-popIn {
+    animation: popIn 0.25s ease-out forwards;
+  }
+
   .animate-bounce-slow {
     animation: bounce-slow 2.5s infinite ease-in-out;
   }
 }
 
-
-.animate-fadeIn {
-  animation: fadeIn 0.25s ease-out forwards;
-}
-
-.animate-popIn {
-  animation: popIn 0.25s ease-out forwards;
-}
-
-.animate-bounce-slow {
-  animation: bounce-slow 2.5s infinite ease-in-out;
-}
-
-/* ==== DatePicker Animation (từ datepicker-animate.css) ==== */
-
+/* ==== DatePicker Animation ==== */
 @keyframes datepicker-fadeIn {
   from {
     opacity: 0;
@@ -120,4 +108,37 @@ input[type="password"] {
 .react-datepicker,
 .react-datepicker__month-container {
   animation: datepicker-fadeIn 0.25s ease-in-out;
+}
+
+/* ==== DatePicker Style Fix ==== */
+.react-datepicker {
+  font-family: inherit;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  background-color: white;
+  overflow: hidden;
+}
+
+.react-datepicker__header {
+  background-color: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.react-datepicker__day--selected {
+  background-color: #3b82f6 !important;
+  color: white !important;
+  border-radius: 50%;
+}
+
+.react-datepicker__day:hover {
+  background-color: #e0f2fe !important;
+  border-radius: 50%;
+}
+
+/* Ẩn dropdown chọn tháng/năm nhưng giữ lịch ngày */
+.react-datepicker__header__dropdown,
+.react-datepicker__month-dropdown-container,
+.react-datepicker__year-dropdown-container {
+  display: none !important;
 }
