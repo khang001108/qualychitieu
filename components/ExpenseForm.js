@@ -207,7 +207,7 @@ export default function ExpenseForm({ user, setItems, selectedMonth, selectedYea
 
               {/* Thông tin tháng / năm */}
               <div className="flex justify-between items-center text-sm text-gray-500">
-                <span>Tháng Tiêu: {Number(selectedMonth)} / {selectedYear}</span>
+                <span>Tháng Tiêu: {Number(selectedMonth) + 1} / {selectedYear}</span>
                 <span className="italic">Ngày Tạo: {dateValue.toLocaleDateString("vi-VN")}</span>
               </div>
 
