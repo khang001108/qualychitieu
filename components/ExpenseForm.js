@@ -25,11 +25,11 @@ export default function ExpenseForm({
   });
 
   const [open, setOpen] = useState(false);
+  const [openCalendar, setOpenCalendar] = useState(false);
   const [toast, setToast] = useState({ message: "", type: "info" });
   const modalRef = useRef();
   const MAX_AMOUNT = 999_999_999_999;
 
-  // 🔹 Đóng popup khi nhấn ESC
   useEffect(() => {
     const closeOnEsc = (e) => e.key === "Escape" && setOpen(false);
     document.addEventListener("keydown", closeOnEsc);
@@ -58,7 +58,6 @@ export default function ExpenseForm({
         "error"
       );
 
-    // ✅ Kiểm tra ngày có thuộc tháng/năm đang chọn không
     const d = new Date(date);
     const formMonth = d.getMonth();
     const formYear = d.getFullYear();
@@ -97,14 +96,12 @@ export default function ExpenseForm({
 
   return (
     <>
-      {/* 🔹 Toast nổi */}
       {toast.message && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 bg-orange-500 text-white px-4 py-2 rounded-lg shadow-lg text-sm animate-fade-in-out z-[9999]">
           {toast.message}
         </div>
       )}
 
-      {/* 🔹 Nút mở popup */}
       <div className="flex justify-end">
         <button
           onClick={() => setOpen(true)}
@@ -115,7 +112,6 @@ export default function ExpenseForm({
         </button>
       </div>
 
-      {/* 🔹 Popup */}
       {open && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center"
@@ -131,7 +127,6 @@ export default function ExpenseForm({
             className="relative bg-white w-11/12 max-w-md p-6 rounded-xl shadow-2xl z-10"
             onMouseDown={(e) => e.stopPropagation()}
           >
-            {/* Header */}
             <div className="flex justify-between items-center mb-3">
               <h3 className="text-lg font-semibold">Thêm khoản chi</h3>
               <button
@@ -169,55 +164,19 @@ export default function ExpenseForm({
                 />
               </div>
 
-              {/* 🔹 Chọn ngày */}
+              {/* 🔹 Nút mở popup chọn ngày */}
               <div className="flex items-center gap-3">
                 <span className="text-sm text-gray-600 flex items-center gap-1">
                   <CalendarDays className="w-4 h-4 text-orange-500" />
                   Ngày chi:
                 </span>
-
-                <DatePicker
-                  selected={new Date(form.date)}
-                  onChange={(d) =>
-                    handleChange("date", d.toISOString().split("T")[0])
-                  }
-                  locale={vi}
-                  dateFormat="dd/MM/yyyy"
-                  openToDate={new Date(selectedYear, selectedMonth, 1)}
-                  showMonthDropdown
-                  showYearDropdown
-                  dropdownMode="select"
-                  portalId="root-portal"
-                  customInput={
-                    <button
-                      type="button"
-                      className="bg-white border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 flex items-center gap-2 shadow-sm transition"
-                    >
-                      {(() => {
-                        if (!form.date)
-                          return `? / ${
-                            Number(selectedMonth) + 1
-                          } / ${selectedYear}`;
-
-                        const d = new Date(form.date);
-                        const formMonth = d.getMonth();
-                        const formYear = d.getFullYear();
-
-                        if (
-                          formMonth === Number(selectedMonth) &&
-                          formYear === Number(selectedYear)
-                        ) {
-                          return d.toLocaleDateString("vi-VN");
-                        } else {
-                          return `? / ${
-                            Number(selectedMonth) + 1
-                          } / ${selectedYear}`;
-                        }
-                      })()}
-                    </button>
-                  }
-                />
-
+                <button
+                  type="button"
+                  onClick={() => setOpenCalendar(true)}
+                  className="bg-white border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 flex items-center gap-2 shadow-sm transition"
+                >
+                  {new Date(form.date).toLocaleDateString("vi-VN")}
+                </button>
                 <button
                   type="button"
                   onClick={() => {
@@ -241,7 +200,6 @@ export default function ExpenseForm({
                 </button>
               </div>
 
-              {/* Thông tin tháng / năm */}
               <div className="flex justify-between items-center text-sm text-gray-500">
                 <span>
                   Tháng tiêu: {Number(selectedMonth) + 1} / {selectedYear}
@@ -251,7 +209,6 @@ export default function ExpenseForm({
                 </span>
               </div>
 
-              {/* Nút hành động */}
               <div className="flex gap-2">
                 <button
                   type="submit"
@@ -272,7 +229,32 @@ export default function ExpenseForm({
         </div>
       )}
 
-      {/* 🔹 Toast riêng */}
+      {/* 📅 Popup chọn ngày giống ExpenseList */}
+      {openCalendar && (
+        <Popup onClose={() => setOpenCalendar(false)}>
+          <h3 className="text-lg font-semibold mb-3 text-gray-800">Chọn ngày chi</h3>
+          <DatePicker
+            selected={new Date(form.date)}
+            onChange={(d) => {
+              handleChange("date", d.toISOString().split("T")[0]);
+              setOpenCalendar(false);
+            }}
+            inline
+            locale={vi}
+            dateFormat="dd/MM/yyyy"
+            openToDate={new Date(selectedYear, selectedMonth, 1)}
+          />
+          <div className="flex justify-end mt-3">
+            <button
+              onClick={() => setOpenCalendar(false)}
+              className="bg-orange-500 text-white px-4 py-1.5 rounded-lg hover:brightness-110"
+            >
+              Đóng
+            </button>
+          </div>
+        </Popup>
+      )}
+
       {toast.message && (
         <Toast
           message={toast.message}
@@ -281,5 +263,24 @@ export default function ExpenseForm({
         />
       )}
     </>
+  );
+}
+
+/* ==============================
+   📦 Popup dùng chung
+================================ */
+function Popup({ children, onClose }) {
+  return (
+    <div
+      className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white p-6 rounded-2xl shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {children}
+      </div>
+    </div>
   );
 }
