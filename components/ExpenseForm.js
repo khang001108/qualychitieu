@@ -232,7 +232,7 @@ export default function ExpenseForm({
       {/* 📅 Popup chọn ngày giống ExpenseList */}
       {openCalendar && (
         <Popup onClose={() => setOpenCalendar(false)}>
-          <h3 className="text-lg font-semibold mb-3 text-gray-800">Chọn ngày chi</h3>
+          {/* <h3 className="text-lg font-semibold mb-3 text-gray-800">Chọn ngày chi</h3> */}
           <DatePicker
             selected={new Date(form.date)}
             onChange={(d) => {
@@ -245,12 +245,12 @@ export default function ExpenseForm({
             openToDate={new Date(selectedYear, selectedMonth, 1)}
           />
           <div className="flex justify-end mt-3">
-            <button
+            {/* <button
               onClick={() => setOpenCalendar(false)}
               className="bg-orange-500 text-white px-4 py-1.5 rounded-lg hover:brightness-110"
             >
               Đóng
-            </button>
+            </button> */}
           </div>
         </Popup>
       )}
