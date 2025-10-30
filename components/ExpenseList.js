@@ -122,8 +122,8 @@ export default function ExpenseList({
               onChange={(e) => setSortType(e.target.value)}
               className="border rounded-xl text-sm px-3 py-2 focus:ring-2 focus:ring-orange-400"
             >
-              <option value="newest">⬆ Đầu tháng</option>
-              <option value="oldest">⬇ Cuối tháng</option>
+              <option value="newest">⤵ Cuối tháng</option>
+              <option value="oldest">⤴ Đầu tháng</option>
               <option value="high">💸 Tiêu nhiều</option>
               <option value="low">💰 Tiêu ít</option>
             </select>
@@ -329,3 +329,4 @@ function ExpenseDetailPopup({ item, onClose }) {
     </div>
   );
 }
+
