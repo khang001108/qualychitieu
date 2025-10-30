@@ -28,6 +28,7 @@ export default function ExpenseForm({
   const [openCalendar, setOpenCalendar] = useState(false);
   const [toast, setToast] = useState({ message: "", type: "info" });
   const modalRef = useRef();
+  const [submitting, setSubmitting] = useState(false);
   const MAX_AMOUNT = 999_999_999_999;
 
   useEffect(() => {
@@ -45,27 +46,47 @@ export default function ExpenseForm({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!user) return alert("Vui lòng đăng nhập");
+    if (submitting) return; // 🚫 tránh double submit
+    setSubmitting(true);
+
+    if (!user) {
+      showToast("Vui lòng đăng nhập", "error");
+      setSubmitting(false);
+      return;
+    }
+
     const { name, amount, date } = form;
     const amountNum = Number(amount);
 
-    if (!name || !amount) return showToast("Nhập đầy đủ thông tin", "error");
-    if (isNaN(amountNum) || amountNum <= 0)
-      return showToast("Số tiền không hợp lệ", "error");
-    if (amountNum > MAX_AMOUNT)
-      return showToast(
+    if (!name || !amount) {
+      showToast("Nhập đầy đủ thông tin", "error");
+      setSubmitting(false);
+      return;
+    }
+
+    if (isNaN(amountNum) || amountNum <= 0) {
+      showToast("Số tiền không hợp lệ", "error");
+      setSubmitting(false);
+      return;
+    }
+
+    if (amountNum > MAX_AMOUNT) {
+      showToast(
         `Số tiền không được vượt quá ${MAX_AMOUNT.toLocaleString()}₫`,
         "error"
       );
+      setSubmitting(false);
+      return;
+    }
 
     const d = new Date(date);
-    const formMonth = d.getMonth();
-    const formYear = d.getFullYear();
     if (
-      formMonth !== Number(selectedMonth) ||
-      formYear !== Number(selectedYear)
+      d.getMonth() !== Number(selectedMonth) ||
+      d.getFullYear() !== Number(selectedYear)
     ) {
-      return showToast("❕ Ngày không thuộc tháng đang chọn", "error");
+      showToast("❕ Ngày không thuộc tháng đang chọn", "error");
+      setSubmitting(false);
+      return;
     }
 
     const newExpense = {
@@ -91,6 +112,8 @@ export default function ExpenseForm({
     } catch (err) {
       console.error("Lỗi thêm:", err);
       showToast("Thêm thất bại", "error");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -232,7 +255,9 @@ export default function ExpenseForm({
       {/* 📅 Popup chọn ngày giống ExpenseList */}
       {openCalendar && (
         <Popup onClose={() => setOpenCalendar(false)}>
-          {/* <h3 className="text-lg font-semibold mb-3 text-gray-800">Chọn ngày chi</h3> */}
+          <h3 className="text-lg font-semibold mb-3 text-gray-800">
+            Chọn ngày chi
+          </h3>
           <DatePicker
             selected={new Date(form.date)}
             onChange={(d) => {
@@ -243,14 +268,19 @@ export default function ExpenseForm({
             locale={vi}
             dateFormat="dd/MM/yyyy"
             openToDate={new Date(selectedYear, selectedMonth, 1)}
+            filterDate={(d) =>
+              d.getMonth() === Number(selectedMonth) &&
+              d.getFullYear() === Number(selectedYear)
+            }
           />
+
           <div className="flex justify-end mt-3">
-            {/* <button
+            <button
               onClick={() => setOpenCalendar(false)}
               className="bg-orange-500 text-white px-4 py-1.5 rounded-lg hover:brightness-110"
             >
               Đóng
-            </button> */}
+            </button>
           </div>
         </Popup>
       )}

@@ -20,10 +20,16 @@ const formatNumberShort = (num) =>
   num >= 1_000_000
     ? `${(num / 1_000_000).toFixed(num % 1_000_000 ? 1 : 0)}M ₫`
     : num >= 1_000
-      ? `${(num / 1_000).toFixed(num % 1_000 ? 1 : 0)}k ₫`
-      : `${num}₫`;
+    ? `${(num / 1_000).toFixed(num % 1_000 ? 1 : 0)}k ₫`
+    : `${num}₫`;
 
-export default function ExpenseList({ user, items, setItems, selectedMonth, selectedYear }) {
+export default function ExpenseList({
+  user,
+  items,
+  setItems,
+  selectedMonth,
+  selectedYear,
+}) {
   const [selectedItem, setSelectedItem] = useState(null);
   const [sortType, setSortType] = useState("newest");
   const [searchDate, setSearchDate] = useState(null);
@@ -33,7 +39,8 @@ export default function ExpenseList({ user, items, setItems, selectedMonth, sele
 
   // 🔹 Lấy dữ liệu Firestore
   useEffect(() => {
-    if (!user || selectedMonth == null || selectedYear == null) return setItems([]);
+    if (!user || selectedMonth == null || selectedYear == null)
+      return setItems([]);
 
     const q = query(
       collection(db, "expenses"),
@@ -67,7 +74,9 @@ export default function ExpenseList({ user, items, setItems, selectedMonth, sele
   const filtered = useMemo(
     () =>
       searchDate
-        ? items.filter((i) => i.date?.startsWith(searchDate.toLocaleDateString("en-CA")))
+        ? items.filter((i) =>
+            i.date?.startsWith(searchDate.toLocaleDateString("en-CA"))
+          )
         : items,
     [items, searchDate]
   );
@@ -77,8 +86,8 @@ export default function ExpenseList({ user, items, setItems, selectedMonth, sele
     const compare = {
       high: (a, b) => b.amount - a.amount,
       low: (a, b) => a.amount - b.amount,
-      oldest: (a, b) => a.createdAt - b.createdAt,
-      newest: (a, b) => b.createdAt - a.createdAt,
+      newest: (a, b) => new Date(b.date) - new Date(a.date), // ngày gần → xa
+      oldest: (a, b) => new Date(a.date) - new Date(b.date), // ngày xa → gần
     }[sortType];
     return c.sort(compare);
   }, [filtered, sortType]);
@@ -100,7 +109,6 @@ export default function ExpenseList({ user, items, setItems, selectedMonth, sele
             </span>
           </h2>
 
-
           <div className="flex items-center gap-2">
             <button
               onClick={() => setOpenCalendar(true)}
@@ -114,8 +122,8 @@ export default function ExpenseList({ user, items, setItems, selectedMonth, sele
               onChange={(e) => setSortType(e.target.value)}
               className="border rounded-xl text-sm px-3 py-2 focus:ring-2 focus:ring-orange-400"
             >
-              <option value="newest">🕒 Mới nhất</option>
-              <option value="oldest">🕓 Cũ nhất</option>
+              <option value="newest">⬆ Đầu tháng</option>
+              <option value="oldest">⬇ Cuối tháng</option>
               <option value="high">💸 Tiêu nhiều</option>
               <option value="low">💰 Tiêu ít</option>
             </select>
@@ -124,9 +132,13 @@ export default function ExpenseList({ user, items, setItems, selectedMonth, sele
 
         {/* 🔹 Danh sách */}
         {loading ? (
-          <p className="text-center py-10 text-gray-500 animate-pulse">Đang tải dữ liệu...</p>
+          <p className="text-center py-10 text-gray-500 animate-pulse">
+            Đang tải dữ liệu...
+          </p>
         ) : !sorted.length ? (
-          <p className="text-center py-10 text-gray-400">Không có khoản chi nào.</p>
+          <p className="text-center py-10 text-gray-400">
+            Không có khoản chi nào.
+          </p>
         ) : (
           <div className="max-h-80 overflow-y-auto pr-2 space-y-3">
             {sorted.map((item) => (
@@ -143,7 +155,9 @@ export default function ExpenseList({ user, items, setItems, selectedMonth, sele
                     </span>
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-800 text-base">{item.name}</p>
+                    <p className="font-semibold text-gray-800 text-base">
+                      {item.name}
+                    </p>
                     <p className="text-xs text-gray-500 mt-1">
                       📅 {new Date(item.date).toLocaleDateString("vi-VN")}
                     </p>
@@ -177,7 +191,9 @@ export default function ExpenseList({ user, items, setItems, selectedMonth, sele
       {/* 📅 Popup chọn ngày */}
       {openCalendar && (
         <Popup onClose={() => setOpenCalendar(false)}>
-          <h3 className="text-lg font-semibold mb-3 text-gray-800">Chọn ngày cần lọc</h3>
+          <h3 className="text-lg font-semibold mb-3 text-gray-800">
+            Chọn ngày cần lọc
+          </h3>
           <DatePicker
             selected={searchDate}
             onChange={(d) => setSearchDate(d)}
@@ -186,8 +202,7 @@ export default function ExpenseList({ user, items, setItems, selectedMonth, sele
             dateFormat="dd/MM/yyyy"
             onMonthChange={() => {}} // cần để tránh cảnh báo
             openToDate={
-              searchDate ||
-              new Date(selectedYear, selectedMonth, 1) // 💡 mặc định mở đúng tháng/năm đang chọn
+              searchDate || new Date(selectedYear, selectedMonth, 1) // 💡 mặc định mở đúng tháng/năm đang chọn
             }
           />
           <div className="flex justify-end gap-2 mt-4">
@@ -208,13 +223,22 @@ export default function ExpenseList({ user, items, setItems, selectedMonth, sele
       )}
 
       {/* 🔸 Popup chi tiết */}
-      {selectedItem && <ExpenseDetailPopup item={selectedItem} onClose={() => setSelectedItem(null)} />}
+      {selectedItem && (
+        <ExpenseDetailPopup
+          item={selectedItem}
+          onClose={() => setSelectedItem(null)}
+        />
+      )}
 
       {/* 🔸 Popup xác nhận xóa */}
       {confirmDelete && (
         <Popup onClose={() => setConfirmDelete(null)}>
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">Xóa khoản chi này?</h3>
-          <p className="text-sm text-gray-500 mb-4">Thao tác này không thể hoàn tác.</p>
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">
+            Xóa khoản chi này?
+          </h3>
+          <p className="text-sm text-gray-500 mb-4">
+            Thao tác này không thể hoàn tác.
+          </p>
           <div className="flex justify-center gap-3">
             <button
               onClick={() => setConfirmDelete(null)}
@@ -240,8 +264,10 @@ export default function ExpenseList({ user, items, setItems, selectedMonth, sele
 ================================ */
 function Popup({ children, onClose }) {
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
-      onClick={onClose}>
+    <div
+      className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
+      onClick={onClose}
+    >
       <div
         className="bg-white p-6 rounded-2xl shadow-2xl"
         onClick={(e) => e.stopPropagation()}
@@ -264,16 +290,32 @@ function ExpenseDetailPopup({ item, onClose }) {
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50"
-      onMouseDown={(e) => !ref.current.contains(e.target) && onClose()}>
+    <div
+      className="fixed inset-0 flex items-center justify-center z-50"
+      onMouseDown={(e) => !ref.current.contains(e.target) && onClose()}
+    >
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
-      <div ref={ref} className="relative bg-orange-100 w-11/12 max-w-md p-6 rounded-2xl shadow-2xl z-10">
-        <h3 className="text-lg font-semibold mb-3 text-gray-800">Chi tiết khoản chi</h3>
+      <div
+        ref={ref}
+        className="relative bg-orange-100 w-11/12 max-w-md p-6 rounded-2xl shadow-2xl z-10"
+      >
+        <h3 className="text-lg font-semibold mb-3 text-gray-800">
+          Chi tiết khoản chi
+        </h3>
         <div className="space-y-2 text-gray-700">
-          <p><b>🏷 Tên:</b> {item.name}</p>
-          <p><b>💰 Số tiền:</b> {item.amount.toLocaleString()}₫</p>
-          <p><b>📅 Ngày chi:</b> {new Date(item.date).toLocaleDateString("vi-VN")}</p>
-          <p><b>🗓 Tháng/Năm Tạo:</b> {(item.month ?? 0) + 1} / {item.year ?? "?"}</p>
+          <p>
+            <b>🏷 Tên:</b> {item.name}
+          </p>
+          <p>
+            <b>💰 Số tiền:</b> {item.amount.toLocaleString()}₫
+          </p>
+          <p>
+            <b>📅 Ngày chi:</b>{" "}
+            {new Date(item.date).toLocaleDateString("vi-VN")}
+          </p>
+          <p>
+            <b>🗓 Tháng/Năm Tạo:</b> {(item.month ?? 0) + 1} / {item.year ?? "?"}
+          </p>
         </div>
         <div className="flex justify-end mt-5">
           <button
