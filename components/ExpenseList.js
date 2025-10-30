@@ -184,6 +184,11 @@ export default function ExpenseList({ user, items, setItems, selectedMonth, sele
             inline
             locale={vi}
             dateFormat="dd/MM/yyyy"
+            onMonthChange={() => {}} // cần để tránh cảnh báo
+            openToDate={
+              searchDate ||
+              new Date(selectedYear, selectedMonth, 1) // 💡 mặc định mở đúng tháng/năm đang chọn
+            }
           />
           <div className="flex justify-end gap-2 mt-4">
             <button
