@@ -204,6 +204,10 @@ export default function ExpenseList({
             openToDate={
               searchDate || new Date(selectedYear, selectedMonth, 1) // 💡 mặc định mở đúng tháng/năm đang chọn
             }
+            filterDate={(d) =>
+              d.getMonth() === Number(selectedMonth) &&
+              d.getFullYear() === Number(selectedYear)
+            }
           />
           <div className="flex justify-end gap-2 mt-4">
             <button
@@ -329,4 +333,3 @@ function ExpenseDetailPopup({ item, onClose }) {
     </div>
   );
 }
-
