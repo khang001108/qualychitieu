@@ -234,15 +234,42 @@ export default function ExpenseForm({
         <Popup onClose={() => setOpenCalendar(false)}>
           <h3 className="text-lg font-semibold mb-3 text-gray-800">Chọn ngày chi</h3>
           <DatePicker
-            selected={new Date(form.date)}
-            onChange={(d) => {
-              handleChange("date", d.toISOString().split("T")[0]);
-              setOpenCalendar(false);
-            }}
-            inline
+            selected={form.date ? new Date(form.date) : null}
+            onChange={(d) => handleChange("date", d.toISOString().split("T")[0])}
             locale={vi}
             dateFormat="dd/MM/yyyy"
             openToDate={new Date(selectedYear, selectedMonth, 1)}
+            showMonthDropdown
+            showYearDropdown
+            dropdownMode="select"
+            portalId="root-portal"
+            customInput={
+              <button
+                type="button"
+                className="bg-white border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 flex items-center gap-2 shadow-sm transition"
+              >
+                {(() => {
+                  // ❓Nếu chưa chọn ngày
+                  if (!form.date)
+                    return `? / ${Number(selectedMonth) + 1} / ${selectedYear}`;
+          
+                  const d = new Date(form.date);
+                  const formMonth = d.getMonth();
+                  const formYear = d.getFullYear();
+          
+                  // 🧩 Nếu ngày thuộc tháng/năm đang xem
+                  if (
+                    formMonth === Number(selectedMonth) &&
+                    formYear === Number(selectedYear)
+                  ) {
+                    return d.toLocaleDateString("vi-VN");
+                  } else {
+                    // 🕐 Nếu khác tháng/năm hiện tại → hiển thị ? / tháng / năm
+                    return `? / ${Number(selectedMonth) + 1} / ${selectedYear}`;
+                  }
+                })()}
+              </button>
+            }
           />
           <div className="flex justify-end mt-3">
             <button
