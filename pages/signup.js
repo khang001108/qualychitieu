@@ -17,6 +17,9 @@ export default function Signup() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  // ✅ Dễ dàng bật/tắt chế độ tự duyệt tài khoản
+  const AUTO_APPROVE = false; // true = auto duyệt | false = cần admin xác nhận
+
   const handleSignup = async (e) => {
     e.preventDefault();
     if (!name.trim()) return setError("Vui lòng nhập tên hiển thị.");
@@ -32,18 +35,28 @@ export default function Signup() {
 
       await updateProfile(userCredential.user, { displayName: name });
 
+      // ✅ Tạo document người dùng trong Firestore
       await setDoc(doc(db, "users", userCredential.user.uid), {
         name,
         email,
         salary: {},
-        approved: false,
+        approved: AUTO_APPROVE,
         createdAt: new Date().toISOString(),
       });
 
       await signOut(auth);
-      alert(
-        "✅ Đăng ký thành công! Vui lòng chờ quản trị viên xác nhận tài khoản của bạn."
-      );
+
+      // ✅ Hiển thị thông báo phù hợp
+      if (AUTO_APPROVE) {
+        alert(
+          "🎉 Đăng ký thành công! Cám ơn bạn đã sử dụng dịch vụ của Khazg 🎊"
+        );
+      } else {
+        alert(
+          "✅ Đăng ký thành công! Vui lòng chờ quản trị viên xác nhận tài khoản của bạn."
+        );
+      }
+
       router.push("/login");
     } catch (err) {
       console.error(err);
