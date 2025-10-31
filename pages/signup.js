@@ -18,7 +18,8 @@ export default function Signup() {
   const router = useRouter();
 
   // ✅ Dễ dàng bật/tắt chế độ tự duyệt tài khoản
-  const AUTO_APPROVE = false; // true = auto duyệt | false = cần admin xác nhận
+  //const AUTO_APPROVE = false; // true = auto duyệt | false = cần admin xác nhận
+  const AUTO_APPROVE = true;
 
   const handleSignup = async (e) => {
     e.preventDefault();
