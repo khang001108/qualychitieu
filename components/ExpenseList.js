@@ -15,13 +15,19 @@ import { vi } from "date-fns/locale";
 import "react-datepicker/dist/react-datepicker.css";
 import { getZodiacForMonth } from "../utils/zodiacUtils";
 
-// 💰 Định dạng số rút gọn
-const formatNumberShort = (num) =>
-  num >= 1_000_000
-    ? `${(num / 1_000_000).toFixed(num % 1_000_000 ? 1 : 0)}M ₫`
-    : num >= 1_000
-    ? `${(num / 1_000).toFixed(num % 1_000 ? 1 : 0)}k ₫`
-    : `${num}₫`;
+// 💰 Định dạng số rút gọn KHÔNG làm tròn
+const formatNumberShort = (num) => {
+  if (num >= 1_000_000) {
+    const val = Math.floor(num / 100_000) / 10; // cắt đến 1 số thập phân
+    return `${val}M ₫`;
+  } else if (num >= 1_000) {
+    const val = Math.floor(num / 100) / 10; // cắt đến 1 số thập phân
+    return `${val}k ₫`;
+  } else {
+    return `${num}₫`;
+  }
+};
+
 
 export default function ExpenseList({
   user,
