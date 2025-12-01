@@ -4,22 +4,22 @@ import { db } from "../lib/firebase";
 import {
   CalendarDays,
   CirclePlus,
-  PencilLine,
-  BanknoteArrowDown,
+  FileText,
+  BanknoteArrowUp,
 } from "lucide-react";
 import DatePicker from "react-datepicker";
 import { vi } from "date-fns/locale";
 import "react-datepicker/dist/react-datepicker.css";
 import Toast from "./Toast";
 
-export default function ExpenseForm({
+export default function SalaryForm({
   user,
   setItems,
   selectedMonth,
   selectedYear,
 }) {
   const [form, setForm] = useState({
-    name: "",
+    note: "",
     amount: "",
     date: new Date().toISOString().split("T")[0],
   });
@@ -29,6 +29,7 @@ export default function ExpenseForm({
   const [toast, setToast] = useState({ message: "", type: "info" });
   const modalRef = useRef();
   const [submitting, setSubmitting] = useState(false);
+
   const MAX_AMOUNT = 999_999_999_999;
 
   useEffect(() => {
@@ -46,7 +47,7 @@ export default function ExpenseForm({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (submitting) return; // 🚫 tránh double submit
+    if (submitting) return;
     setSubmitting(true);
 
     if (!user) {
@@ -55,11 +56,11 @@ export default function ExpenseForm({
       return;
     }
 
-    const { name, amount, date } = form;
+    const { note, amount, date } = form;
     const amountNum = Number(amount);
 
-    if (!name || !amount) {
-      showToast("Nhập đầy đủ thông tin", "error");
+    if (!amount) {
+      showToast("Vui lòng nhập số tiền", "error");
       setSubmitting(false);
       return;
     }
@@ -89,9 +90,10 @@ export default function ExpenseForm({
       return;
     }
 
-    const newExpense = {
+    const newSalary = {
+      type: "salary",
       userId: user.uid,
-      name,
+      note: note.trim(),
       amount: amountNum,
       date: new Date(date).toISOString(),
       month: Number(selectedMonth),
@@ -100,15 +102,17 @@ export default function ExpenseForm({
     };
 
     try {
-      const ref = await addDoc(collection(db, "expenses"), newExpense);
-      setItems((prev) => [{ id: ref.id, ...newExpense }, ...prev]);
+      const ref = await addDoc(collection(db, "expenses"), newSalary);
+      setItems((prev) => [{ id: ref.id, ...newSalary }, ...prev]);
+
       setForm({
-        name: "",
+        note: "",
         amount: "",
         date: new Date().toISOString().split("T")[0],
       });
+
       setOpen(false);
-      showToast("Bạn đã thêm một khoản chi mới!", "success");
+      showToast("💵 Đã thêm lương tháng này!", "success");
     } catch (err) {
       console.error("Lỗi thêm:", err);
       showToast("Thêm thất bại", "error");
@@ -120,18 +124,21 @@ export default function ExpenseForm({
   return (
     <>
       {toast.message && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 bg-orange-500 text-white px-4 py-2 rounded-lg shadow-lg text-sm animate-fade-in-out z-[9999]">
-          {toast.message}
-        </div>
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast({ message: "", type: "info" })}
+        />
       )}
 
+      {/* Nút mở popup */}
       <div className="flex justify-end">
         <button
           onClick={() => setOpen(true)}
-          className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg hover:brightness-110 active:scale-95 transition-all duration-200"
+          className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg hover:brightness-110 active:scale-95 transition-all duration-200"
         >
           <CirclePlus className="w-5 h-5" />
-          Thêm khoản chi
+          Nhập lương
         </button>
       </div>
 
@@ -147,13 +154,15 @@ export default function ExpenseForm({
 
         >
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+
           <div
             ref={modalRef}
             className="relative bg-white w-11/12 max-w-md p-6 rounded-xl shadow-2xl z-10"
             onMouseDown={(e) => e.stopPropagation()}
           >
+            {/* Header */}
             <div className="flex justify-between items-center mb-3">
-              <h3 className="text-lg font-semibold">Thêm khoản chi</h3>
+              <h3 className="text-lg font-semibold">Nhập lương tháng</h3>
               <button
                 onClick={() => setOpen(false)}
                 className="text-gray-500 hover:text-gray-800"
@@ -163,24 +172,24 @@ export default function ExpenseForm({
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-3">
+              {/* Ghi chú */}
               <div className="relative">
-                <PencilLine className="absolute right-3 top-3 text-gray-400 w-5 h-5" />
+                <FileText className="absolute right-3 top-3 text-gray-400 w-5 h-5" />
                 <input
                   className="w-full border p-2 rounded"
-                  placeholder="Tên khoản chi"
-                  value={form.name}
-                  onChange={(e) => handleChange("name", e.target.value)}
+                  placeholder="Ghi chú (tuỳ chọn)"
+                  value={form.note}
+                  onChange={(e) => handleChange("note", e.target.value)}
                 />
               </div>
 
+              {/* Số tiền */}
               <div className="relative">
-                <BanknoteArrowDown className="absolute right-3 top-3 text-gray-400 w-5 h-5" />
+                <BanknoteArrowUp className="absolute right-3 top-3 text-gray-400 w-5 h-5" />
                 <input
                   className="w-full border p-2 rounded text-left"
-                  placeholder="Số tiền"
-                  value={form.amount
-                    .toString()
-                    .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                  placeholder="Số tiền lương"
+                  value={form.amount.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
                   onChange={(e) => {
                     const raw = e.target.value.replace(/,/g, "");
                     if (/^\d*$/.test(raw)) handleChange("amount", raw);
@@ -189,51 +198,53 @@ export default function ExpenseForm({
                 />
               </div>
 
-              {/* 🔹 Nút mở popup chọn ngày */}
+              {/* Chọn ngày */}
               <div className="flex items-center gap-3">
                 <span className="text-sm text-gray-600 flex items-center gap-1">
-                  <CalendarDays className="w-4 h-4 text-orange-500" />
-                  Ngày chi:
+                  <CalendarDays className="w-4 h-4 text-green-500" />
+                  Ngày nhận:
                 </span>
+
                 <button
                   type="button"
                   onClick={() => setOpenCalendar(true)}
-                  className="bg-white border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 flex items-center gap-2 shadow-sm transition"
+                  className="bg-white border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-700 hover:bg-green-50 flex items-center gap-2 shadow-sm transition"
                 >
                   {new Date(form.date).toLocaleDateString("vi-VN")}
                 </button>
+
                 <button
                   type="button"
                   onClick={() => {
                     const today = new Date();
-                    const todayMonth = today.getMonth();
-                    const todayYear = today.getFullYear();
-
                     if (
-                      todayMonth === Number(selectedMonth) &&
-                      todayYear === Number(selectedYear)
+                      today.getMonth() === Number(selectedMonth) &&
+                      today.getFullYear() === Number(selectedYear)
                     ) {
                       handleChange("date", today.toISOString().split("T")[0]);
-                      showToast("✅ Đã chọn ngày hôm nay!", "success");
+                      showToast("Đã chọn ngày hôm nay!", "success");
                     } else {
-                      showToast("❕ Không phải tháng hiện tại", "error");
+                      showToast("Không phải tháng hiện tại", "error");
                     }
                   }}
-                  className="text-xs text-orange-600 hover:underline ml-1"
+                  className="text-xs text-green-600 hover:underline ml-1"
                 >
                   Hôm nay
                 </button>
               </div>
 
+              {/* Thông tin */}
               <div className="flex justify-between items-center text-sm text-gray-500">
                 <span>
-                  Tháng tiêu: {Number(selectedMonth) + 1} / {selectedYear}
+                  Tháng: {Number(selectedMonth) + 1} / {selectedYear}
                 </span>
                 <span className="italic">
-                  Ngày tạo: {new Date(form.date).toLocaleDateString("vi-VN")}
+                  Ngày nhận:{" "}
+                  {new Date(form.date).toLocaleDateString("vi-VN")}
                 </span>
               </div>
 
+              {/* Nút */}
               <div className="flex gap-2">
                 <button
                   type="submit"
@@ -241,17 +252,17 @@ export default function ExpenseForm({
                   className={
                     "flex-1 py-2 rounded text-white flex items-center justify-center gap-2 " +
                     (submitting
-                      ? "bg-orange-300 cursor-not-allowed"
-                      : "bg-orange-500 hover:brightness-110")
+                      ? "bg-green-400 cursor-not-allowed"
+                      : "bg-green-600 hover:brightness-110")
                   }
                 >
                   {submitting ? (
                     <>
                       <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                      Đang thêm...
+                      Đang lưu...
                     </>
                   ) : (
-                    "Thêm"
+                    "Lưu"
                   )}
                 </button>
 
@@ -268,11 +279,11 @@ export default function ExpenseForm({
         </div>
       )}
 
-      {/* 📅 Popup chọn ngày giống ExpenseList */}
+      {/* Calendar Popup */}
       {openCalendar && (
         <Popup onClose={() => setOpenCalendar(false)}>
           <h3 className="text-lg font-semibold mb-3 text-gray-800">
-            Chọn ngày chi
+            Chọn ngày nhận lương
           </h3>
           <DatePicker
             selected={new Date(form.date)}
@@ -293,28 +304,20 @@ export default function ExpenseForm({
           <div className="flex justify-end mt-3">
             <button
               onClick={() => setOpenCalendar(false)}
-              className="bg-orange-500 text-white px-4 py-1.5 rounded-lg hover:brightness-110"
+              className="bg-green-600 text-white px-4 py-1.5 rounded-lg hover:brightness-110"
             >
               Đóng
             </button>
           </div>
         </Popup>
       )}
-
-      {toast.message && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast({ message: "", type: "info" })}
-        />
-      )}
     </>
   );
 }
 
-/* ==============================
-   📦 Popup dùng chung
-================================ */
+/* =======================
+   Popup dùng chung
+======================= */
 function Popup({ children, onClose }) {
   return (
     <div

@@ -1,15 +1,18 @@
 // pages/index.js
-import { motion } from "framer-motion"; // For animation
-import { useState, useEffect, useRef } from "react"; // React hooks
-import Salary from "../components/Salary"; // Salary component
-import ExpenseForm from "../components/ExpenseForm"; // Expense form component
-import ExpenseList from "../components/ExpenseList"; // Expense list component
-import Summary from "../components/Summary"; // Summary component
-import ExpenseChart from "../components/ExpenseChart"; // Expense chart component
-import ExpenseMonth from "../components/ExpenseMonth";  // Month selector component
-import { auth, db } from "../lib/firebase"; // Firebase config
-import { onAuthStateChanged, signOut } from "firebase/auth"; // Firebase auth functions
-import AccountPopup from "../components/AccountPopup"; // Account popup component
+import { motion } from "framer-motion";
+import { useState, useEffect, useRef } from "react";
+
+import SalaryForm from "../components/SalaryForm"; 
+import ExpenseForm from "../components/ExpenseForm";
+import ExpenseList from "../components/ExpenseList";
+import Summary from "../components/Summary"; // ❗ bạn cần sửa Summary (tôi làm ở dưới)
+import ExpenseChart from "../components/ExpenseChart"; // ❗ cần sửa biểu đồ (tôi làm ở dưới)
+import ExpenseMonth from "../components/ExpenseMonth";
+
+import { auth, db } from "../lib/firebase";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+
+import AccountPopup from "../components/AccountPopup";
 
 import {
   LogOut,
@@ -20,139 +23,151 @@ import {
   ChartLine,
   ArrowUp,
 } from "lucide-react";
-import { ICONS } from "../utils/iconUtils"; // ✅ icons chung
+
+import { ICONS } from "../utils/iconUtils";
 
 export default function Home() {
-  // ⚙️ State chính
-  const [user, setUser] = useState(null); // 🟢 Dữ liệu user
-  const [salary, setSalary] = useState({}); // 🟢 Dữ liệu lương
-  const [items, setItems] = useState([]); // 🟢 Expense items trong tháng
-  const [yearItems, setYearItems] = useState([]); // 🟢 Expense items trong năm
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth()); // 🟢 chọn tháng
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear()); // 🟢 chọn năm
-  const [showAccount, setShowAccount] = useState(false); // 🟢 hiện popup tài khoản
-  const [showLogoutPopup, setShowLogoutPopup] = useState(false); // 🟢 hiện popup đăng xuất
-  const [showDeletePopup, setShowDeletePopup] = useState(false); // 🟢 hiện popup xóa dữ liệu
-  const [showRemaining, setShowRemaining] = useState(false); // 🟢 hiện popup còn lại
-  const [showScrollTop, setShowScrollTop] = useState(false); // 🟢 hiện nút cuộn lên
-  const [toast, setToast] = useState(null); // 🟢 Toast thông báo
+  const [user, setUser] = useState(null);
 
-  const chartRef = useRef(null);
+  const [items, setItems] = useState([]);          // chi + lương theo tháng
+  const [yearItems, setYearItems] = useState([]);  // chi + lương theo năm
 
-  // 📊 Tính tổng thu chi
-  const yearData = salary[String(selectedYear)] || {};
-  const totalSalaryYear = Object.values(yearData).reduce((a, b) => a + Number(b || 0), 0);
-  const totalExpenseYear = yearItems.reduce((s, i) => s + Number(i.amount || 0), 0);
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+
+  const [showAccount, setShowAccount] = useState(false);
+  const [showLogoutPopup, setShowLogoutPopup] = useState(false);
+  const [showDeletePopup, setShowDeletePopup] = useState(false);
+  const [showRemaining, setShowRemaining] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const [toast, setToast] = useState(null);
+
+  const chartRef = useRef();
+
+  // 🔥 Tổng thu – chi cả năm (tính từ yearItems)
+  const totalSalaryYear = yearItems
+    .filter((i) => i.type === "salary")
+    .reduce((s, i) => s + Number(i.amount || 0), 0);
+
+  const totalExpenseYear = yearItems
+    .filter((i) => i.type !== "salary")
+    .reduce((s, i) => s + Number(i.amount || 0), 0);
 
   const remainingYear = totalSalaryYear - totalExpenseYear;
-  // 👤 Lắng nghe user đăng nhập
+
+  // 🔹 Lắng nghe trạng thái đăng nhập
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => setUser(u || null));
     return () => unsub();
   }, []);
 
-  // 📥 Lấy dữ liệu user từ Firestore
+  // 🔹 Load dữ liệu theo tháng
   useEffect(() => {
-    if (!user) return;
-    (async () => {
-      const { doc, getDoc } = await import("firebase/firestore");
-      const userRef = doc(db, "users", user.uid);
-      const snap = await getDoc(userRef);
-      if (snap.exists()) {
-        const data = snap.data();
-        setSalary(data.salary || {});
-        setUser((prev) => ({
-          ...prev,
-          avatar: data.avatar || "User",
-          avatarColor: data.avatarColor || "#4f46e5",
-        }));
+    if (!user) return setItems([]);
+
+    import("firebase/firestore").then(
+      ({ collection, query, where, onSnapshot }) => {
+        const q = query(
+          collection(db, "expenses"),
+          where("userId", "==", user.uid),
+          where("month", "==", Number(selectedMonth)),
+          where("year", "==", Number(selectedYear))
+        );
+
+        const unsub = onSnapshot(q, (snap) => {
+          setItems(
+            snap.docs.map((d) => ({
+              id: d.id,
+              ...d.data(),
+            }))
+          );
+        });
+
+        return unsub;
       }
-    })();
-  }, [user?.uid]);
+    );
+  }, [user, selectedMonth, selectedYear]);
 
-  // 🔁 Lắng nghe chi tiêu theo năm
+  // 🔹 Load dữ liệu theo năm (cho chart & tổng hợp)
   useEffect(() => {
-    if (!user) return;
-    import("firebase/firestore").then(({ collection, query, where, onSnapshot }) => {
-      const q = query(
-        collection(db, "expenses"),
-        where("userId", "==", user.uid),
-        where("year", "==", selectedYear)
-      );
-      const unsub = onSnapshot(q, (snap) => {
-        const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-        setYearItems(data);
-      });
-      return () => unsub();
-    });
-  }, [user?.uid, selectedYear]);
+    if (!user) return setYearItems([]);
 
-  // ⬆️ Hiện nút cuộn lên
+    import("firebase/firestore").then(
+      ({ collection, query, where, onSnapshot }) => {
+        const q = query(
+          collection(db, "expenses"),
+          where("userId", "==", user.uid),
+          where("year", "==", Number(selectedYear))
+        );
+
+        const unsub = onSnapshot(q, (snap) => {
+          setYearItems(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+        });
+
+        return unsub;
+      }
+    );
+  }, [user, selectedYear]);
+
+  // 🔹 Hiện nút scroll top
   useEffect(() => {
     const onScroll = () => setShowScrollTop(window.scrollY > 300);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // ⏱️ Ẩn toast sau 3s
+  // 🔹 Auto-hide toast
   useEffect(() => {
     if (!toast) return;
     const timer = setTimeout(() => setToast(null), 3000);
     return () => clearTimeout(timer);
   }, [toast]);
 
-  // 🚪 Đăng xuất
+  // 🚪 Logout
   const handleLogout = async () => {
     await signOut(auth);
-    setUser(null);
     setItems([]);
-    setSalary({});
+    setYearItems([]);
+    setUser(null);
   };
 
-  // 🧹 Xóa toàn bộ dữ liệu tháng (chi tiêu + lương)
+  // 🧹 Xóa toàn bộ dữ liệu tháng (chi + lương)
   const handleDeleteAll = async () => {
     try {
-      const { collection, query, where, getDocs, deleteDoc, doc, getDoc, updateDoc } =
-        await import("firebase/firestore");
+      const {
+        collection,
+        query,
+        where,
+        getDocs,
+        deleteDoc,
+      } = await import("firebase/firestore");
 
-      // 🔸 Xóa chi tiêu
       const q = query(
         collection(db, "expenses"),
         where("userId", "==", user.uid),
-        where("month", "==", selectedMonth),
-        where("year", "==", selectedYear)
+        where("month", "==", Number(selectedMonth)),
+        where("year", "==", Number(selectedYear))
       );
+
       const snap = await getDocs(q);
-      await Promise.all(snap.docs.map((d) => deleteDoc(doc(db, "expenses", d.id))));
 
-      // 🔸 Xóa lương
-      const userRef = doc(db, "users", user.uid);
-      const snapUser = await getDoc(userRef);
-      if (snapUser.exists()) {
-        const data = snapUser.data();
-        const salaryCopy = { ...data.salary };
-        delete salaryCopy?.[selectedYear]?.[selectedMonth];
-        if (Object.keys(salaryCopy?.[selectedYear] || {}).length === 0) delete salaryCopy[selectedYear];
-        await updateDoc(userRef, { salary: salaryCopy });
-        setSalary(salaryCopy);
-      }
+      await Promise.all(snap.docs.map((d) => deleteDoc(d.ref)));
 
-      // 🔹 Reset local state + toast
-      setItems([]);
       setToast({
         type: "success",
-        msg: `Đã xóa toàn bộ dữ liệu tháng ${selectedMonth + 1}/${selectedYear}.`,
+        msg: `Đã xóa toàn bộ dữ liệu tháng ${selectedMonth + 1}/${selectedYear}`,
       });
+
+      setItems([]);
     } catch (err) {
-      console.error(err);
-      setToast({ type: "error", msg: "❌ Xóa thất bại, vui lòng thử lại." });
+      setToast({ type: "error", msg: "❌ Lỗi khi xóa dữ liệu!" });
     }
   };
 
-  // 🧩 Cập nhật thông tin user sau khi đóng popup Account
   const handleCloseAccountPopup = (updated) => {
     setShowAccount(false);
     if (!updated) return;
+
     setUser((prev) => ({
       ...prev,
       displayName: updated.displayName ?? prev.displayName,
@@ -162,7 +177,7 @@ export default function Home() {
   };
 
   // =======================
-  // 🖥️ Giao diện Login
+  // 🖥️ Login UI
   // =======================
   if (!user) {
     return (
@@ -188,47 +203,61 @@ export default function Home() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-200 via-blue-50 to-white">
       <div className="w-full max-w-6xl mx-auto p-4 space-y-5">
+
         {/* 🔹 Header */}
         <div className="bg-white shadow-[0_6px_30px_rgba(99,102,241,0.25)] p-4 rounded-2xl sticky top-0 z-30 backdrop-blur-md border border-indigo-100">
           <div className="flex justify-between items-center">
-            <h1 className="text-xl font-bold text-gray-800">💰 Quản Lý Chi Tiêu</h1>
+            <h1 className="text-xl font-bold text-gray-800">💰 Quản Lý Thu – Chi</h1>
             <button
               onClick={() => setShowLogoutPopup(true)}
               className="p-2 text-gray-600 hover:bg-gray-100 rounded-full"
-              title="Thoát"
             >
               <LogOut className="w-5 h-5" />
             </button>
           </div>
 
-          {/* Thông tin user */}
           <div className="mt-2 text-sm text-gray-500">
+            {/* Avatar */}
             <div className="flex items-center gap-2">
               {(() => {
                 const match = ICONS.find((i) => i.name === user.avatar);
                 if (!match) return null;
                 const Icon = match.icon;
-                return <Icon className="w-6 h-6" style={{ color: user.avatarColor || "#4f46e5" }} />;
+                return (
+                  <Icon
+                    className="w-6 h-6"
+                    style={{ color: user.avatarColor || "#4f46e5" }}
+                  />
+                );
               })()}
-              <span className="font-medium text-gray-700">{user.displayName || "Người dùng ẩn danh"}</span>
+              <span className="font-medium text-gray-700">
+                {user.displayName || "Người dùng ẩn danh"}
+              </span>
+
               <button
                 onClick={() => setShowAccount(true)}
                 className="p-1 text-gray-600 hover:text-gray-800"
-                title="Tài khoản"
               >
                 <Settings2 className="w-4 h-4" />
               </button>
             </div>
 
+            {/* Dư năm */}
             <div className="flex items-center gap-2 mt-1">
-              <span className="font-medium text-gray-700">💹 Tổng dư năm {selectedYear}:</span>
-              <span className={`font-semibold ${remainingYear < 0 ? "text-red-600" : "text-green-600"}`}>
+              <span className="font-medium text-gray-700">
+                💹 Tổng dư năm {selectedYear}:
+              </span>
+              <span
+                className={`font-semibold ${
+                  remainingYear < 0 ? "text-red-600" : "text-green-600"
+                }`}
+              >
                 {showRemaining ? `${remainingYear.toLocaleString()}₫` : "••••••"}
               </span>
+
               <button
                 onClick={() => setShowRemaining((p) => !p)}
                 className="text-gray-500 hover:text-gray-700"
-                title={showRemaining ? "Ẩn số dư" : "Hiện số dư"}
               >
                 {showRemaining ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -239,75 +268,88 @@ export default function Home() {
         {/* 🔸 Nút thao tác */}
         <div className="flex justify-between items-center">
           <button
-            onClick={() => chartRef.current?.scrollIntoView({ behavior: "smooth" })}
+            onClick={() =>
+              chartRef.current?.scrollIntoView({ behavior: "smooth" })
+            }
             className="flex items-center gap-1 bg-gray-600 text-white px-3 py-2 rounded-lg hover:bg-gray-700 text-sm"
           >
             <ChartLine className="w-4 h-4" /> Biểu đồ
           </button>
+
           <button
             onClick={() => setShowDeletePopup(true)}
             className="flex items-center gap-1 bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 text-sm"
           >
-            <Trash2 className="w-4 h-4" /> Xóa
+            <Trash2 className="w-4 h-4" /> Xóa tháng
           </button>
         </div>
 
-        {/* 🧩 Popup đăng xuất */}
+        {/* Popup các loại */}
         {showLogoutPopup && (
-          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setShowLogoutPopup(false)}>
-            <div className="bg-white rounded-2xl shadow-2xl p-6 w-80 text-center animate-fadeIn" onClick={(e) => e.stopPropagation()}>
-              <h2 className="text-lg font-semibold text-gray-800 mb-3">Bạn có chắc muốn đăng xuất?</h2>
-              <div className="flex justify-center gap-3 mt-4">
-                <button
-                  onClick={async () => { await handleLogout(); setShowLogoutPopup(false); }}
-                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg"
-                >Đăng xuất</button>
-                <button onClick={() => setShowLogoutPopup(false)} className="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg">Hủy</button>
-              </div>
-            </div>
-          </div>
+          <ConfirmLogout open={setShowLogoutPopup} handleLogout={handleLogout} />
         )}
 
-        {/* 🧹 Popup xác nhận xóa dữ liệu */}
         {showDeletePopup && (
-          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setShowDeletePopup(false)}>
-            <div className="bg-white rounded-2xl shadow-2xl p-6 w-80 text-center animate-fadeIn" onClick={(e) => e.stopPropagation()}>
-              <h2 className="text-lg font-semibold text-red-600 mb-3">Xóa toàn bộ dữ liệu</h2>
-              <p className="text-sm text-gray-600 mb-4">
-                Xóa toàn bộ dữ liệu tháng <b>{selectedMonth + 1}/{selectedYear}</b>?
-              </p>
-              <div className="flex justify-center gap-3">
-                <button
-                  onClick={async () => { setShowDeletePopup(false); await handleDeleteAll(); }}
-                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg"
-                >Xóa</button>
-                <button onClick={() => setShowDeletePopup(false)} className="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg">Hủy</button>
-              </div>
-            </div>
-          </div>
+          <ConfirmDeleteMonth
+            open={setShowDeletePopup}
+            handleDeleteAll={handleDeleteAll}
+            selectedMonth={selectedMonth}
+            selectedYear={selectedYear}
+          />
         )}
 
-        {/* 👤 Popup tài khoản */}
-        {showAccount && <AccountPopup user={user} onClose={handleCloseAccountPopup} />}
+        {showAccount && (
+          <AccountPopup user={user} onClose={handleCloseAccountPopup} />
+        )}
 
-        {/* 📊 Tổng hợp & danh sách */}
-        <Summary items={items} salary={salary} selectedMonth={selectedMonth} selectedYear={selectedYear} />
+        {/* Tổng hợp */}
+        <Summary
+          items={items}
+          selectedMonth={selectedMonth}
+          selectedYear={selectedYear}
+        />
+
         <div className="flex flex-col items-center gap-3">
           <div className="flex justify-between w-full">
-            <ExpenseMonth selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth}
-              selectedYear={selectedYear} setSelectedYear={setSelectedYear} />
-            <Salary user={user} salary={salary} setSalary={setSalary}
-              selectedMonth={selectedMonth} selectedYear={selectedYear} />
+            <ExpenseMonth
+              selectedMonth={selectedMonth}
+              setSelectedMonth={setSelectedMonth}
+              selectedYear={selectedYear}
+              setSelectedYear={setSelectedYear}
+            />
+
+            {/* Form nhập lương mới */}
+            <SalaryForm
+              user={user}
+              setItems={setItems}
+              selectedMonth={selectedMonth}
+              selectedYear={selectedYear}
+            />
           </div>
-          <ExpenseForm user={user} setItems={setItems} selectedMonth={selectedMonth} selectedYear={selectedYear} />
-          <ExpenseList user={user} items={items} setItems={setItems}
-            selectedMonth={selectedMonth} selectedYear={selectedYear} />
+
+          {/* Form chi tiêu */}
+          <ExpenseForm
+            user={user}
+            setItems={setItems}
+            selectedMonth={selectedMonth}
+            selectedYear={selectedYear}
+          />
+
+          {/* Danh sách */}
+          <ExpenseList
+            user={user}
+            items={items}
+            setItems={setItems}
+            selectedMonth={selectedMonth}
+            selectedYear={selectedYear}
+          />
+
           <div ref={chartRef} className="w-full">
-            <ExpenseChart items={yearItems} salary={salary} selectedYear={selectedYear} />
+            <ExpenseChart items={yearItems} selectedYear={selectedYear} />
           </div>
         </div>
 
-        {/* ⬆️ Nút cuộn lên đầu */}
+        {/* ⬆️ Scroll top */}
         {showScrollTop && (
           <motion.button
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
@@ -321,7 +363,7 @@ export default function Home() {
         )}
       </div>
 
-      {/* 🔔 Toast */}
+      {/* Toast */}
       {toast && (
         <div
           className={`fixed top-6 right-6 px-4 py-2 rounded-xl shadow-lg flex items-center gap-2 text-white text-sm animate-fadeIn z-[100]
@@ -330,6 +372,99 @@ export default function Home() {
           {toast.type === "error" ? "⚠️" : "✅"} <span>{toast.msg}</span>
         </div>
       )}
+    </div>
+  );
+}
+
+/* ================================
+   🔥 Popup xác nhận logout
+================================ */
+function ConfirmLogout({ open, handleLogout }) {
+  return (
+    <div
+      className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+      onClick={() => open(false)}
+    >
+      <div
+        className="bg-white rounded-2xl shadow-2xl p-6 w-80 text-center animate-fadeIn"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 className="text-lg font-semibold text-gray-800 mb-3">
+          Bạn có chắc muốn đăng xuất?
+        </h2>
+
+        <div className="flex justify-center gap-3 mt-4">
+          <button
+            onClick={async () => {
+              await handleLogout();
+              open(false);
+            }}
+            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg"
+          >
+            Đăng xuất
+          </button>
+
+          <button
+            onClick={() => open(false)}
+            className="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg"
+          >
+            Hủy
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ================================
+   🔥 Popup xóa tháng
+================================ */
+function ConfirmDeleteMonth({
+  open,
+  handleDeleteAll,
+  selectedMonth,
+  selectedYear,
+}) {
+  return (
+    <div
+      className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+      onClick={() => open(false)}
+    >
+      <div
+        className="bg-white rounded-2xl shadow-2xl p-6 w-80 text-center animate-fadeIn"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 className="text-lg font-semibold text-red-600 mb-3">
+          Xóa toàn bộ dữ liệu
+        </h2>
+
+        <p className="text-sm text-gray-600 mb-4">
+          Xóa toàn bộ dữ liệu tháng{" "}
+          <b>
+            {selectedMonth + 1}/{selectedYear}
+          </b>
+          ?
+        </p>
+
+        <div className="flex justify-center gap-3">
+          <button
+            onClick={async () => {
+              open(false);
+              await handleDeleteAll();
+            }}
+            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg"
+          >
+            Xóa
+          </button>
+
+          <button
+            onClick={() => open(false)}
+            className="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg"
+          >
+            Hủy
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
