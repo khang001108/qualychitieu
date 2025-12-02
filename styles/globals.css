@@ -150,3 +150,28 @@ input[type="password"] {
 .react-datepicker-popper {
   z-index: 9999 !important;
 }
+
+
+/* 🔥 Dark mode cho react-datepicker */
+.dark .react-datepicker {
+  background-color: #1f2937 !important; /* gray-800 */
+  border-color: #374151 !important;
+}
+
+.dark .react-datepicker__day,
+.dark .react-datepicker__day-name {
+  color: #e5e7eb !important; /* gray-200 */
+}
+
+.dark .react-datepicker__day--selected {
+  background-color: #f97316 !important; /* orange-500 */
+}
+
+.dark .react-datepicker__header {
+  background-color: #111827 !important; /* gray-900 */
+  border-bottom: 1px solid #374151 !important;
+}
+
+.dark .react-datepicker__current-month {
+  color: #e5e7eb !important;
+}

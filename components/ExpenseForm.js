@@ -30,6 +30,12 @@ export default function ExpenseForm({
   const modalRef = useRef();
   const [submitting, setSubmitting] = useState(false);
   const MAX_AMOUNT = 999_999_999_999;
+  const baseBtn = `
+  flex items-center gap-2 
+  px-5 py-2.5 rounded-xl shadow-md 
+  text-white text-sm font-medium
+  hover:brightness-110 active:scale-95 transition
+`;
 
   useEffect(() => {
     const closeOnEsc = (e) => e.key === "Escape" && setOpen(false);
@@ -128,7 +134,7 @@ export default function ExpenseForm({
       <div className="flex justify-end">
         <button
           onClick={() => setOpen(true)}
-          className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg hover:brightness-110 active:scale-95 transition-all duration-200"
+          className={`${baseBtn} bg-orange-500`}
         >
           <CirclePlus className="w-5 h-5" />
           Thêm khoản chi
@@ -149,14 +155,21 @@ export default function ExpenseForm({
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
           <div
             ref={modalRef}
-            className="relative bg-white w-11/12 max-w-md p-6 rounded-xl shadow-2xl z-10"
+            className="
+  relative w-11/12 max-w-md p-6 rounded-xl shadow-2xl z-10
+  bg-white dark:bg-gray-900
+  text-gray-800 dark:text-gray-200
+  border border-gray-200 dark:border-gray-700
+  transition-colors duration-300
+"
             onMouseDown={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-3">
-              <h3 className="text-lg font-semibold">Thêm khoản chi</h3>
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                Thêm khoản chi</h3>
               <button
                 onClick={() => setOpen(false)}
-                className="text-gray-500 hover:text-gray-800"
+                className="text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
               >
                 ✕
               </button>
@@ -166,7 +179,7 @@ export default function ExpenseForm({
               <div className="relative">
                 <PencilLine className="absolute right-3 top-3 text-gray-400 w-5 h-5" />
                 <input
-                  className="w-full border p-2 rounded"
+                  className="w-full border p-2 rounded bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-200 dark:border-gray-700 transition-colors duration-300"
                   placeholder="Tên khoản chi"
                   value={form.name}
                   onChange={(e) => handleChange("name", e.target.value)}
@@ -176,7 +189,15 @@ export default function ExpenseForm({
               <div className="relative">
                 <BanknoteArrowDown className="absolute right-3 top-3 text-gray-400 w-5 h-5" />
                 <input
-                  className="w-full border p-2 rounded text-left"
+                  className="
+    w-full border p-2 rounded text-left
+    bg-white dark:bg-gray-800
+    text-gray-800 dark:text-gray-200
+    border-gray-300 dark:border-gray-700
+    placeholder-gray-400 dark:placeholder-gray-500
+    transition-colors duration-300
+  "
+
                   placeholder="Số tiền"
                   value={form.amount
                     .toString()
@@ -191,14 +212,14 @@ export default function ExpenseForm({
 
               {/* 🔹 Nút mở popup chọn ngày */}
               <div className="flex items-center gap-3">
-                <span className="text-sm text-gray-600 flex items-center gap-1">
+                <span className="text-sm text-gray-400 flex items-center gap-1">
                   <CalendarDays className="w-4 h-4 text-orange-500" />
                   Ngày chi:
                 </span>
                 <button
                   type="button"
                   onClick={() => setOpenCalendar(true)}
-                  className="bg-white border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 flex items-center gap-2 shadow-sm transition"
+                  className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-orange-50 dark:hover:bg-orange-900 flex items-center gap-2 shadow-sm transition"
                 >
                   {new Date(form.date).toLocaleDateString("vi-VN")}
                 </button>
@@ -225,7 +246,7 @@ export default function ExpenseForm({
                 </button>
               </div>
 
-              <div className="flex justify-between items-center text-sm text-gray-500">
+              <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
                 <span>
                   Tháng tiêu: {Number(selectedMonth) + 1} / {selectedYear}
                 </span>
@@ -258,7 +279,7 @@ export default function ExpenseForm({
                 <button
                   type="button"
                   onClick={() => !submitting && setOpen(false)}
-                  className="flex-1 bg-gray-200 py-2 rounded hover:bg-gray-300"
+                  className="flex-1 bg-gray-200 dark:bg-gray-700 py-2 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-300"
                 >
                   Hủy
                 </button>
@@ -271,7 +292,7 @@ export default function ExpenseForm({
       {/* 📅 Popup chọn ngày giống ExpenseList */}
       {openCalendar && (
         <Popup onClose={() => setOpenCalendar(false)}>
-          <h3 className="text-lg font-semibold mb-3 text-gray-800">
+          <h3 className="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-200">
             Chọn ngày chi
           </h3>
           <DatePicker
@@ -322,11 +343,18 @@ function Popup({ children, onClose }) {
       onClick={onClose}
     >
       <div
-        className="bg-white p-6 rounded-2xl shadow-2xl"
+        className="
+    bg-white dark:bg-gray-900
+    p-6 rounded-2xl shadow-2xl
+    border border-gray-200 dark:border-gray-700
+    text-gray-800 dark:text-gray-200
+    transition-colors duration-300
+  "
         onClick={(e) => e.stopPropagation()}
       >
         {children}
       </div>
     </div>
   );
+
 }

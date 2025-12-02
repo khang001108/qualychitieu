@@ -15,16 +15,14 @@ import { useState, useMemo } from "react";
 import { getZodiacForMonth } from "../utils/zodiacUtils";
 
 const MONTHS = [
-  "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
-  "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12",
+  "Tháng 1","Tháng 2","Tháng 3","Tháng 4","Tháng 5","Tháng 6",
+  "Tháng 7","Tháng 8","Tháng 9","Tháng 10","Tháng 11","Tháng 12",
 ];
 
 export default function ExpenseChart({ items = [], selectedYear }) {
   const [hoveredMonth, setHoveredMonth] = useState(0);
 
-  // =====================================================
-  // 🔥 TÍNH CHI TIÊU THEO THÁNG
-  // =====================================================
+  // Chi tiêu
   const monthlyExpense = useMemo(() => {
     const res = {};
     items.forEach((item) => {
@@ -36,9 +34,7 @@ export default function ExpenseChart({ items = [], selectedYear }) {
     return res;
   }, [items, selectedYear]);
 
-  // =====================================================
-  // 🔥 TÍNH LƯƠNG THEO THÁNG (type === salary)
-  // =====================================================
+  // Lương
   const monthlyIncome = useMemo(() => {
     const res = {};
     items.forEach((item) => {
@@ -50,9 +46,7 @@ export default function ExpenseChart({ items = [], selectedYear }) {
     return res;
   }, [items, selectedYear]);
 
-  // =====================================================
-  // 🔥 CHUẨN BỊ DATA BIỂU ĐỒ
-  // =====================================================
+  // Data Chart
   const data = useMemo(() => {
     return MONTHS.map((label, i) => {
       const income = monthlyIncome[i] || 0;
@@ -75,14 +69,25 @@ export default function ExpenseChart({ items = [], selectedYear }) {
   };
 
   return (
-    <div className="w-full bg-white p-6 md:p-10 rounded-2xl shadow-lg border border-gray-100">
-      {/* 🔹 Title */}
-      <h2 className="text-2xl font-semibold text-gray-800 text-center mb-4 flex justify-center items-center gap-2">
+    <div
+      className="
+        w-full p-6 md:p-10 rounded-2xl shadow-lg border
+        bg-white dark:bg-gray-900
+        border-gray-100 dark:border-gray-700
+        transition-colors duration-300
+      "
+    >
+      {/* Title */}
+      <h2 className="
+        text-2xl font-semibold text-gray-800 dark:text-gray-200 
+        text-center mb-4 flex justify-center items-center gap-2
+      ">
         📈 Biểu đồ tài chính năm {selectedYear}
         <span
-          className={`text-2xl inline-block transition-transform duration-500 ${
-            "animate-bounce-slow"
-          }`}
+          className={`
+            text-2xl inline-block transition-transform duration-500
+            animate-bounce-slow
+          `}
         >
           {getZodiacForMonth(hoveredMonth, selectedYear)}
         </span>
@@ -99,26 +104,58 @@ export default function ExpenseChart({ items = [], selectedYear }) {
               }
             }}
           >
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-
-            <XAxis
-              dataKey="month"
-              tick={{ fontSize: 12, fill: "#4b5563" }}
+            {/* GRID — dynamic theo theme */}
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke={typeof window !== "undefined" &&
+                      document.documentElement.classList.contains("dark")
+                        ? "#374151"   // gray-700
+                        : "#e5e7eb"   // gray-200
+              }
             />
 
+            {/* X Axis */}
+            <XAxis
+              dataKey="month"
+              tick={{
+                fontSize: 12,
+                fill:
+                  typeof window !== "undefined" &&
+                  document.documentElement.classList.contains("dark")
+                    ? "#d1d5db" // gray-300
+                    : "#4b5563", // gray-600
+              }}
+            />
+
+            {/* Y Axis */}
             <YAxis
               tickFormatter={(v) =>
                 v >= 1_000_000 ? `${(v / 1_000_000).toFixed(0)}M` : v
               }
-              tick={{ fontSize: 12, fill: "#4b5563" }}
+              tick={{
+                fontSize: 12,
+                fill:
+                  typeof window !== "undefined" &&
+                  document.documentElement.classList.contains("dark")
+                    ? "#d1d5db"
+                    : "#4b5563",
+              }}
             />
 
-            {/* Tooltip */}
+            {/* Tooltip — DARK MODE */}
             <Tooltip
               content={({ active, payload, label }) =>
                 active && payload?.length ? (
-                  <div className="bg-white p-3 rounded-xl shadow-lg border border-gray-200 text-sm">
-                    <p className="font-semibold text-gray-800 mb-1">{label}</p>
+                  <div
+                    className="
+                      p-3 rounded-xl shadow-lg border text-sm
+                      bg-white dark:bg-gray-800
+                      border-gray-200 dark:border-gray-700
+                      text-gray-800 dark:text-gray-200
+                      transition-colors duration-200
+                    "
+                  >
+                    <p className="font-semibold mb-1">{label}</p>
                     {payload.map((e, i) => (
                       <p key={i} style={{ color: colorMap[e.name] }}>
                         <span className="font-medium">{e.name}: </span>
@@ -130,23 +167,33 @@ export default function ExpenseChart({ items = [], selectedYear }) {
               }
             />
 
-            <Legend iconType="circle" wrapperStyle={{ fontSize: 13 }} />
+            {/* Legend — màu chữ dynamic */}
+            <Legend
+              iconType="circle"
+              wrapperStyle={{
+                fontSize: 13,
+                color:
+                  typeof window !== "undefined" &&
+                  document.documentElement.classList.contains("dark")
+                    ? "#d1d5db"
+                    : "#374151",
+              }}
+            />
 
             {/* Gradients */}
             <defs>
-              {[
-                ["yellowGrad", "#facc15", "#fde047"],
-                ["greenGrad", "#22c55e", "#16a34a"],
-                ["redGrad", "#ef4444", "#b91c1c"],
-              ].map(([id, c1, c2]) => (
+              {[["yellowGrad", "#facc15", "#fde047"],
+               ["greenGrad", "#22c55e", "#16a34a"],
+               ["redGrad", "#ef4444", "#b91c1c"]]
+              .map(([id, c1, c2]) => (
                 <linearGradient key={id} id={id} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={c1} stopOpacity={0.9} />
-                  <stop offset="100%" stopColor={c2} stopOpacity={0.3} />
+                  <stop offset="0%" stopColor={c1} stopOpacity="0.9" />
+                  <stop offset="100%" stopColor={c2} stopOpacity="0.3" />
                 </linearGradient>
               ))}
             </defs>
 
-            {/* 🌶 Chi tiêu */}
+            {/* Chi */}
             <Bar
               dataKey="Chi"
               fill="url(#redGrad)"
@@ -154,7 +201,7 @@ export default function ExpenseChart({ items = [], selectedYear }) {
               radius={[8, 8, 0, 0]}
             />
 
-            {/* 🪙 Còn lại */}
+            {/* Còn lại */}
             <Area
               type="monotone"
               dataKey="CònLại"
@@ -164,7 +211,7 @@ export default function ExpenseChart({ items = [], selectedYear }) {
               dot={false}
             />
 
-            {/* 💵 Lương */}
+            {/* Lương */}
             <Line
               type="monotone"
               dataKey="Lương"
@@ -177,7 +224,7 @@ export default function ExpenseChart({ items = [], selectedYear }) {
         </ResponsiveContainer>
       </div>
 
-      <p className="text-sm text-gray-500 mt-3 text-center">
+      <p className="text-sm text-gray-500 dark:text-gray-400 mt-3 text-center">
         💡 Di chuột hoặc chạm để xem chi tiết từng tháng.
       </p>
     </div>

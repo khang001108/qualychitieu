@@ -2,11 +2,11 @@
 import { motion } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 
-import SalaryForm from "../components/SalaryForm"; 
+import SalaryForm from "../components/SalaryForm";
 import ExpenseForm from "../components/ExpenseForm";
 import ExpenseList from "../components/ExpenseList";
-import Summary from "../components/Summary"; // ❗ bạn cần sửa Summary (tôi làm ở dưới)
-import ExpenseChart from "../components/ExpenseChart"; // ❗ cần sửa biểu đồ (tôi làm ở dưới)
+import Summary from "../components/Summary";
+import ExpenseChart from "../components/ExpenseChart";
 import ExpenseMonth from "../components/ExpenseMonth";
 
 import { auth, db } from "../lib/firebase";
@@ -29,8 +29,8 @@ import { ICONS } from "../utils/iconUtils";
 export default function Home() {
   const [user, setUser] = useState(null);
 
-  const [items, setItems] = useState([]);          // chi + lương theo tháng
-  const [yearItems, setYearItems] = useState([]);  // chi + lương theo năm
+  const [items, setItems] = useState([]);
+  const [yearItems, setYearItems] = useState([]);
 
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
@@ -44,7 +44,7 @@ export default function Home() {
 
   const chartRef = useRef();
 
-  // 🔥 Tổng thu – chi cả năm (tính từ yearItems)
+  // Tổng thu – chi cả năm
   const totalSalaryYear = yearItems
     .filter((i) => i.type === "salary")
     .reduce((s, i) => s + Number(i.amount || 0), 0);
@@ -55,13 +55,13 @@ export default function Home() {
 
   const remainingYear = totalSalaryYear - totalExpenseYear;
 
-  // 🔹 Lắng nghe trạng thái đăng nhập
+  // Theo dõi đăng nhập
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => setUser(u || null));
     return () => unsub();
   }, []);
 
-  // 🔹 Load dữ liệu theo tháng
+  // Load dữ liệu tháng
   useEffect(() => {
     if (!user) return setItems([]);
 
@@ -88,7 +88,7 @@ export default function Home() {
     );
   }, [user, selectedMonth, selectedYear]);
 
-  // 🔹 Load dữ liệu theo năm (cho chart & tổng hợp)
+  // Load dữ liệu năm
   useEffect(() => {
     if (!user) return setYearItems([]);
 
@@ -109,21 +109,21 @@ export default function Home() {
     );
   }, [user, selectedYear]);
 
-  // 🔹 Hiện nút scroll top
+  // Scroll top
   useEffect(() => {
     const onScroll = () => setShowScrollTop(window.scrollY > 300);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // 🔹 Auto-hide toast
+  // Toast auto hide
   useEffect(() => {
     if (!toast) return;
     const timer = setTimeout(() => setToast(null), 3000);
     return () => clearTimeout(timer);
   }, [toast]);
 
-  // 🚪 Logout
+  // Logout
   const handleLogout = async () => {
     await signOut(auth);
     setItems([]);
@@ -131,7 +131,7 @@ export default function Home() {
     setUser(null);
   };
 
-  // 🧹 Xóa toàn bộ dữ liệu tháng (chi + lương)
+  // Xóa dữ liệu tháng
   const handleDeleteAll = async () => {
     try {
       const {
@@ -177,14 +177,27 @@ export default function Home() {
   };
 
   // =======================
-  // 🖥️ Login UI
+  // GIAO DIỆN LOGIN
   // =======================
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-200 via-blue-50 to-white">
-        <div className="bg-white p-10 rounded-3xl shadow-2xl text-center w-80 sm:w-96 border border-gray-100">
-          <h2 className="text-3xl font-extrabold mb-4 text-gray-800">Một ngày mới⭐,</h2>
-          <h2 className="text-3xl font-extrabold mb-5 text-gray-800">một cơ hội mới🌈!</h2>
+      <div
+        className="
+          min-h-screen flex items-center justify-center 
+          bg-gradient-to-br from-blue-200 via-blue-50 to-white 
+          dark:from-gray-900 dark:via-gray-950 dark:to-black
+          transition-colors duration-300
+        "
+      >
+        <div className="
+          bg-white dark:bg-gray-900 
+          text-gray-800 dark:text-gray-200
+          p-10 rounded-3xl shadow-2xl 
+          text-center w-80 sm:w-96 
+          border border-gray-100 dark:border-gray-700
+        ">
+          <h2 className="text-3xl font-extrabold mb-4">Một ngày mới⭐,</h2>
+          <h2 className="text-3xl font-extrabold mb-5">một cơ hội mới🌈!</h2>
           <a
             href="/login"
             className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-6 py-3 rounded-2xl font-semibold shadow-lg hover:scale-105 transition"
@@ -198,25 +211,47 @@ export default function Home() {
   }
 
   // =======================
-  // 🏠 Giao diện chính
+  // GIAO DIỆN CHÍNH
   // =======================
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-200 via-blue-50 to-white">
+    <div
+      className="
+        min-h-screen flex items-center justify-center 
+        bg-gradient-to-br from-blue-200 via-blue-50 to-white 
+        dark:from-gray-900 dark:via-gray-950 dark:to-black
+        transition-colors duration-300
+      "
+    >
       <div className="w-full max-w-6xl mx-auto p-4 space-y-5">
 
-        {/* 🔹 Header */}
-        <div className="bg-white shadow-[0_6px_30px_rgba(99,102,241,0.25)] p-4 rounded-2xl sticky top-0 z-30 backdrop-blur-md border border-indigo-100">
+        {/* HEADER */}
+        <div
+          className="
+            bg-white dark:bg-gray-900 
+            shadow-[0_6px_30px_rgba(99,102,241,0.25)] 
+            p-4 rounded-2xl sticky top-0 z-30 backdrop-blur-md 
+            border border-indigo-100 dark:border-gray-700
+            transition-colors duration-300
+          "
+        >
           <div className="flex justify-between items-center">
-            <h1 className="text-xl font-bold text-gray-800">💰 Quản Lý Thu – Chi</h1>
+            <h1 className="text-xl font-bold text-gray-800 dark:text-gray-200">
+              💰 Quản Lý Thu – Chi
+            </h1>
+
             <button
               onClick={() => setShowLogoutPopup(true)}
-              className="p-2 text-gray-600 hover:bg-gray-100 rounded-full"
+              className="
+                p-2 text-gray-600 dark:text-gray-300 
+                hover:bg-gray-100 dark:hover:bg-gray-800 
+                rounded-full
+              "
             >
               <LogOut className="w-5 h-5" />
             </button>
           </div>
 
-          <div className="mt-2 text-sm text-gray-500">
+          <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
             {/* Avatar */}
             <div className="flex items-center gap-2">
               {(() => {
@@ -230,13 +265,14 @@ export default function Home() {
                   />
                 );
               })()}
-              <span className="font-medium text-gray-700">
+
+              <span className="font-medium text-gray-700 dark:text-gray-300">
                 {user.displayName || "Người dùng ẩn danh"}
               </span>
 
               <button
                 onClick={() => setShowAccount(true)}
-                className="p-1 text-gray-600 hover:text-gray-800"
+                className="p-1 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100"
               >
                 <Settings2 className="w-4 h-4" />
               </button>
@@ -244,49 +280,74 @@ export default function Home() {
 
             {/* Dư năm */}
             <div className="flex items-center gap-2 mt-1">
-              <span className="font-medium text-gray-700">
+              <span className="font-medium text-gray-700 dark:text-gray-300">
                 💹 Tổng dư năm {selectedYear}:
               </span>
+
               <span
                 className={`font-semibold ${
-                  remainingYear < 0 ? "text-red-600" : "text-green-600"
+                  remainingYear < 0
+                    ? "text-red-600"
+                    : "text-green-600 dark:text-green-400"
                 }`}
               >
-                {showRemaining ? `${remainingYear.toLocaleString()}₫` : "••••••"}
+                {showRemaining
+                  ? `${remainingYear.toLocaleString()}₫`
+                  : "••••••"}
               </span>
 
               <button
                 onClick={() => setShowRemaining((p) => !p)}
-                className="text-gray-500 hover:text-gray-700"
+                className="
+                  text-gray-500 hover:text-gray-700
+                  dark:text-gray-400 dark:hover:text-gray-200
+                "
               >
-                {showRemaining ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {showRemaining ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
               </button>
             </div>
           </div>
         </div>
 
-        {/* 🔸 Nút thao tác */}
+        {/* Nút thao tác */}
         <div className="flex justify-between items-center">
           <button
             onClick={() =>
               chartRef.current?.scrollIntoView({ behavior: "smooth" })
             }
-            className="flex items-center gap-1 bg-gray-600 text-white px-3 py-2 rounded-lg hover:bg-gray-700 text-sm"
+            className="
+              flex items-center gap-1 
+              bg-gray-600 dark:bg-gray-700 
+              text-white px-3 py-2 rounded-lg 
+              hover:bg-gray-700 dark:hover:bg-gray-600 text-sm
+            "
           >
             <ChartLine className="w-4 h-4" /> Biểu đồ
           </button>
 
           <button
             onClick={() => setShowDeletePopup(true)}
-            className="flex items-center gap-1 bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 text-sm"
+            className="
+              flex items-center gap-1 
+              bg-red-500 dark:bg-red-600 text-white 
+              px-3 py-2 rounded-lg 
+              hover:bg-red-600 dark:hover:bg-red-500 text-sm
+            "
           >
             <Trash2 className="w-4 h-4" /> Xóa tháng
           </button>
         </div>
 
-        {/* Popup các loại */}
+        {/* POPUP */}
         {showLogoutPopup && (
-          <ConfirmLogout open={setShowLogoutPopup} handleLogout={handleLogout} />
+          <ConfirmLogout
+            open={setShowLogoutPopup}
+            handleLogout={handleLogout}
+          />
         )}
 
         {showDeletePopup && (
@@ -309,6 +370,7 @@ export default function Home() {
           selectedYear={selectedYear}
         />
 
+        {/* Form + List */}
         <div className="flex flex-col items-center gap-3">
           <div className="flex justify-between w-full">
             <ExpenseMonth
@@ -318,7 +380,6 @@ export default function Home() {
               setSelectedYear={setSelectedYear}
             />
 
-            {/* Form nhập lương mới */}
             <SalaryForm
               user={user}
               setItems={setItems}
@@ -327,7 +388,6 @@ export default function Home() {
             />
           </div>
 
-          {/* Form chi tiêu */}
           <ExpenseForm
             user={user}
             setItems={setItems}
@@ -335,7 +395,6 @@ export default function Home() {
             selectedYear={selectedYear}
           />
 
-          {/* Danh sách */}
           <ExpenseList
             user={user}
             items={items}
@@ -349,14 +408,20 @@ export default function Home() {
           </div>
         </div>
 
-        {/* ⬆️ Scroll top */}
+        {/* Scroll Top */}
         {showScrollTop && (
           <motion.button
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3 }}
-            className="fixed bottom-6 right-6 w-12 h-12 bg-indigo-500 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-indigo-600"
+            className="
+              fixed bottom-6 right-6 
+              w-12 h-12 
+              bg-indigo-500 text-white 
+              rounded-full flex items-center justify-center 
+              shadow-lg hover:bg-indigo-600
+            "
           >
             <ArrowUp className="w-5 h-5" />
           </motion.button>
@@ -366,8 +431,12 @@ export default function Home() {
       {/* Toast */}
       {toast && (
         <div
-          className={`fixed top-6 right-6 px-4 py-2 rounded-xl shadow-lg flex items-center gap-2 text-white text-sm animate-fadeIn z-[100]
-          ${toast.type === "error" ? "bg-red-500" : "bg-green-500"}`}
+          className={`
+            fixed top-6 right-6 px-4 py-2 rounded-xl shadow-lg 
+            flex items-center gap-2 text-white text-sm animate-fadeIn 
+            z-[100] dark:shadow-black/40
+            ${toast.type === "error" ? "bg-red-500" : "bg-green-500"}
+          `}
         >
           {toast.type === "error" ? "⚠️" : "✅"} <span>{toast.msg}</span>
         </div>
@@ -377,7 +446,7 @@ export default function Home() {
 }
 
 /* ================================
-   🔥 Popup xác nhận logout
+   POPUP ĐĂNG XUẤT
 ================================ */
 function ConfirmLogout({ open, handleLogout }) {
   return (
@@ -386,10 +455,15 @@ function ConfirmLogout({ open, handleLogout }) {
       onClick={() => open(false)}
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl p-6 w-80 text-center animate-fadeIn"
+        className="
+          bg-white dark:bg-gray-900 
+          text-gray-800 dark:text-gray-200 
+          rounded-2xl shadow-2xl p-6 w-80 text-center animate-fadeIn 
+          border dark:border-gray-700
+        "
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-lg font-semibold text-gray-800 mb-3">
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">
           Bạn có chắc muốn đăng xuất?
         </h2>
 
@@ -399,14 +473,22 @@ function ConfirmLogout({ open, handleLogout }) {
               await handleLogout();
               open(false);
             }}
-            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg"
+            className="
+              bg-red-500 hover:bg-red-600 
+              text-white px-4 py-2 rounded-lg
+            "
           >
             Đăng xuất
           </button>
 
           <button
             onClick={() => open(false)}
-            className="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg"
+            className="
+              bg-gray-200 dark:bg-gray-700 
+              hover:bg-gray-300 dark:hover:bg-gray-600 
+              text-gray-800 dark:text-gray-200
+              px-4 py-2 rounded-lg
+            "
           >
             Hủy
           </button>
@@ -417,7 +499,7 @@ function ConfirmLogout({ open, handleLogout }) {
 }
 
 /* ================================
-   🔥 Popup xóa tháng
+   POPUP XÓA THÁNG
 ================================ */
 function ConfirmDeleteMonth({
   open,
@@ -431,18 +513,23 @@ function ConfirmDeleteMonth({
       onClick={() => open(false)}
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl p-6 w-80 text-center animate-fadeIn"
+        className="
+          bg-white dark:bg-gray-900 
+          text-gray-800 dark:text-gray-200 
+          rounded-2xl shadow-2xl p-6 w-80 text-center animate-fadeIn 
+          border dark:border-gray-700
+        "
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-lg font-semibold text-red-600 mb-3">
+        <h2 className="text-lg font-semibold text-red-600 dark:text-red-400 mb-3">
           Xóa toàn bộ dữ liệu
         </h2>
 
-        <p className="text-sm text-gray-600 mb-4">
+        <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
           Xóa toàn bộ dữ liệu tháng{" "}
           <b>
             {selectedMonth + 1}/{selectedYear}
-          </b>
+          </b>{" "}
           ?
         </p>
 
@@ -452,14 +539,22 @@ function ConfirmDeleteMonth({
               open(false);
               await handleDeleteAll();
             }}
-            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg"
+            className="
+              bg-red-500 hover:bg-red-600 
+              text-white px-4 py-2 rounded-lg
+            "
           >
             Xóa
           </button>
 
           <button
             onClick={() => open(false)}
-            className="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg"
+            className="
+              bg-gray-200 dark:bg-gray-700 
+              hover:bg-gray-300 dark:hover:bg-gray-600 
+              text-gray-800 dark:text-gray-200
+              px-4 py-2 rounded-lg
+            "
           >
             Hủy
           </button>

@@ -39,6 +39,7 @@ export default function ExpenseList({
   const [sortType, setSortType] = useState("newest");
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [openPinned, setOpenPinned] = useState(false);
+  const [filterSalary, setFilterSalary] = useState(false);
 
   /* ==========================
      Load Firestore
@@ -92,62 +93,125 @@ export default function ExpenseList({
     return c.sort(compare);
   }, [items, sortType]);
 
+  /* ==========================
+     Filter Salary Only
+  ========================== */
+  const filtered = useMemo(() => {
+    return filterSalary
+      ? sorted.filter((i) => i.type === "salary")
+      : sorted;
+  }, [sorted, filterSalary]);
+
   const remove = async (id) => {
     await deleteDoc(doc(db, "expenses", id));
     setConfirmDelete(null);
   };
 
   /* ==========================
-      UI
+      UI START
   ========================== */
   return (
     <>
-      <div className="w-full bg-white p-6 md:p-10 rounded-2xl shadow-lg border border-gray-100">
+      <div
+        className="
+        w-full p-6 md:p-10 rounded-2xl shadow-lg border
+        bg-white dark:bg-gray-900
+        border-gray-100 dark:border-gray-700
+        text-gray-800 dark:text-gray-200
+        transition-colors duration-300
+      "
+      >
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between md:items-center mb-5 gap-3">
-          <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
             📋 Chi tiêu tháng {selectedMonth + 1}/{selectedYear}
             <span className="text-2xl animate-bounce-slow inline-block">
               {getZodiacForMonth(selectedMonth, selectedYear)}
             </span>
           </h2>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setOpenPinned(true)}
-              className="flex items-center gap-1 bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-xl shadow"
-            >
-              📌 Đã ghim ({items.filter((i) => i.pinned).length})
-            </button>
+          <div className="flex items-center gap-3 w-full">
+            {/* TRÁI: Nút ghim + Sort */}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setOpenPinned(true)}
+                className="flex items-center gap-1 bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-xl shadow"
+              >
+                📌 Đã ghim ({items.filter((i) => i.pinned).length})
+              </button>
 
-            <select
-              value={sortType}
-              onChange={(e) => setSortType(e.target.value)}
-              className="border rounded-xl text-sm px-3 py-2"
-            >
-              <option value="newest">⤵ Cuối tháng</option>
-              <option value="oldest">⤴ Đầu tháng</option>
-              <option value="high">💸 Tiêu nhiều</option>
-              <option value="low">💰 Tiêu ít</option>
-            </select>
+              <select
+                value={sortType}
+                onChange={(e) => setSortType(e.target.value)}
+                className="
+        border rounded-xl text-sm px-3 py-2
+        bg-white dark:bg-gray-800
+        border-gray-300 dark:border-gray-600
+        text-gray-700 dark:text-gray-200
+        transition-colors
+      "
+              >
+                <option value="newest">⤵ Cuối tháng</option>
+                <option value="oldest">⤴ Đầu tháng</option>
+                <option value="high">💸 Tiêu nhiều</option>
+                <option value="low">💰 Tiêu ít</option>
+              </select>
+            </div>
+
+            {/* PHẢI: Toggle */}
+            <div className="flex items-center gap-2 ml-auto">
+              <span className="text-sm text-gray-600 dark:text-gray-300">
+                Chỉ xem lương
+              </span>
+
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={filterSalary}
+                  onChange={() => setFilterSalary((v) => !v)}
+                  className="sr-only peer"
+                />
+                <div
+                  className="
+          w-11 h-6 bg-gray-300 peer-focus:outline-none
+          rounded-full peer dark:bg-gray-700
+          peer-checked:bg-green-500 transition
+        "
+                ></div>
+
+                <div
+                  className="
+          absolute left-1 top-1 w-4 h-4 bg-white rounded-full
+          transition-all peer-checked:translate-x-5
+        "
+                ></div>
+              </label>
+            </div>
           </div>
-        </div>
 
+        </div>
         {/* LIST */}
         <div className="max-h-80 overflow-y-auto pr-2 space-y-3">
-          {sorted.map((item) => {
+          {filtered.map((item) => {
             const isSalary = item.type === "salary";
 
             return (
               <div
                 key={item.id}
                 onClick={() => setSelectedItem(item)}
-                className="relative flex justify-between items-center p-4 bg-gradient-to-r from-white to-orange-50 border border-gray-100 rounded-2xl shadow-sm hover:shadow-md"
+                className="
+                  relative flex justify-between items-center p-4 rounded-2xl 
+                  shadow-sm hover:shadow-md border cursor-pointer
+                  bg-gradient-to-r from-white to-orange-50
+                  dark:from-gray-800 dark:to-gray-700
+                  border-gray-100 dark:border-gray-700
+                  transition-all duration-300
+                "
               >
                 {/* Left Border */}
                 <div
                   className={
-                    "absolute left-0 top-0 h-full w-1 rounded-l-2xl " +
+                    "absolute left-0 top-0 h-full w-1 rounded-l-xl " +
                     (isSalary ? "bg-green-500" : "bg-orange-500")
                   }
                 />
@@ -158,18 +222,24 @@ export default function ExpenseList({
                     className={
                       "w-10 h-10 flex items-center justify-center rounded-full shadow-inner " +
                       (isSalary
-                        ? "bg-green-100 text-green-600"
-                        : "bg-orange-100 text-orange-600")
+                        ? "bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300"
+                        : "bg-orange-100 dark:bg-orange-900 text-orange-600 dark:text-orange-300")
                     }
                   >
-                    {isSalary ? "💵" : "💸"}
+                    <span className="animate-bounce-slow block">
+                      {isSalary ? "💵" : "💸"}
+                    </span>
                   </div>
 
                   <div>
-                    <p className="font-semibold text-gray-800 text-base">
+                    <p className="font-semibold text-gray-800 dark:text-gray-200 text-base flex items-center gap-1">
                       {isSalary ? item.note || "Lương tháng" : item.name}
+
+                      {item.pinned && (
+                        <span className="text-yellow-400 text-lg animate-bounce-slow">📌</span>
+                      )}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                       📅 {new Date(item.date).toLocaleDateString("vi-VN")}
                     </p>
                   </div>
@@ -193,7 +263,7 @@ export default function ExpenseList({
                       e.stopPropagation();
                       setConfirmDelete(item.id);
                     }}
-                    className="p-1 rounded-lg text-white bg-red-500"
+                    className="p-1 rounded-lg text-white bg-red-500 hover:bg-red-600 transition"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -204,16 +274,16 @@ export default function ExpenseList({
         </div>
 
         {/* Stats */}
-        <div className="mt-5 text-center text-sm text-gray-600 font-medium">
-          <p>🧾 Tổng giao dịch: {sorted.length}</p>
+        <div className="mt-5 text-center text-sm text-gray-600 dark:text-gray-400 font-medium">
+          <p>🧾 Tổng giao dịch: {filtered.length}</p>
 
           <div className="flex justify-center gap-6 mt-2">
-            <span className="text-orange-600">
-              💸 Chi: {sorted.filter((i) => i.type !== "salary").length}
+            <span className="text-orange-400">
+              💸 Chi: {filtered.filter((i) => i.type !== "salary").length}
             </span>
 
-            <span className="text-green-600">
-              💵 Lương: {sorted.filter((i) => i.type === "salary").length}
+            <span className="text-green-400">
+              💵 Lương: {filtered.filter((i) => i.type === "salary").length}
             </span>
           </div>
         </div>
@@ -224,13 +294,13 @@ export default function ExpenseList({
       ========================== */}
       {openPinned && (
         <Popup onClose={() => setOpenPinned(false)}>
-          <h3 className="text-lg font-semibold mb-3 text-gray-800">
+          <h3 className="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-200">
             📌 Danh sách khoản ghim
           </h3>
 
           <div className="max-h-64 overflow-y-auto space-y-3 pr-2">
             {items.filter((i) => i.pinned).length === 0 && (
-              <p className="text-center text-sm text-gray-500">
+              <p className="text-center text-sm text-gray-500 dark:text-gray-400">
                 Chưa có khoản ghim.
               </p>
             )}
@@ -244,14 +314,20 @@ export default function ExpenseList({
                     setSelectedItem(i);
                     setOpenPinned(false);
                   }}
-                  className="p-3 bg-yellow-50 border rounded-xl flex justify-between items-center cursor-pointer hover:bg-yellow-100"
+                  className="
+                    p-3 rounded-xl flex justify-between items-center cursor-pointer 
+                    border border-gray-200 dark:border-gray-700
+                    bg-yellow-50 dark:bg-yellow-900/30
+                    hover:bg-yellow-100 dark:hover:bg-yellow-900/50
+                    transition-colors
+                  "
                 >
                   <div>
-                    <p className="font-semibold">
+                    <p className="font-semibold text-gray-800 dark:text-gray-200">
                       {i.type === "salary" ? "💵 Lương" : "💸 Chi"} —{" "}
                       {i.amount.toLocaleString()}₫
                     </p>
-                    <p className="text-xs text-gray-600">
+                    <p className="text-xs text-gray-600 dark:text-gray-400">
                       {new Date(i.date).toLocaleDateString("vi-VN")}
                     </p>
                   </div>
@@ -295,18 +371,18 @@ export default function ExpenseList({
       ========================== */}
       {confirmDelete && (
         <Popup onClose={() => setConfirmDelete(null)}>
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">
             Xoá khoản này?
           </h3>
 
-          <p className="text-sm text-gray-500 mb-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
             Thao tác này không thể hoàn tác.
           </p>
 
           <div className="flex justify-center gap-3">
             <button
               onClick={() => setConfirmDelete(null)}
-              className="px-4 py-2 bg-gray-200 rounded-lg"
+              className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg"
             >
               Hủy
             </button>
@@ -334,7 +410,13 @@ function Popup({ children, onClose }) {
       onClick={onClose}
     >
       <div
-        className="bg-white p-6 rounded-2xl shadow-2xl w-[420px] max-w-full mx-auto"
+        className="
+          bg-white dark:bg-gray-900
+          p-6 rounded-2xl shadow-2xl w-[420px] max-w-full mx-auto
+          border border-gray-200 dark:border-gray-700
+          text-gray-800 dark:text-gray-200
+          transition-colors
+        "
         onClick={(e) => e.stopPropagation()}
       >
         {children}
@@ -371,12 +453,18 @@ function ExpenseDetailPopup({ item, onClose }) {
     >
       <div
         ref={ref}
-        className={
-          "relative bg-white p-6 w-11/12 max-w-md rounded-2xl shadow-xl " +
-          (isSalary ? "border-green-500 bg-green-50" : "border-orange-500 bg-orange-50")
-        }
+        className={`
+          relative p-6 w-11/12 max-w-md rounded-2xl shadow-xl border
+          bg-white dark:bg-gray-900
+          text-gray-800 dark:text-gray-200
+          transition-colors duration-300
+          ${isSalary
+            ? "border-green-500 dark:border-green-400 bg-green-50 dark:bg-green-900/30"
+            : "border-orange-500 dark:border-orange-400 bg-orange-50 dark:bg-orange-900/30"
+          }
+        `}
       >
-        {/* NÚT GHIM GÓC PHẢI */}
+        {/* Button PIN */}
         <button
           onClick={togglePin}
           className={
@@ -390,12 +478,12 @@ function ExpenseDetailPopup({ item, onClose }) {
         </button>
 
         {/* TITLE */}
-        <h3 className="text-lg font-semibold mb-3 text-gray-800 pr-20">
+        <h3 className="text-lg font-semibold mb-3 pr-20">
           {isSalary ? "Chi tiết lương" : "Chi tiết khoản chi"}
         </h3>
 
         {/* DETAILS */}
-        <div className="space-y-2 text-gray-700">
+        <div className="space-y-2">
           {isSalary ? (
             <p><b>📄 Ghi chú:</b> {localItem.note || "Không có"}</p>
           ) : (
@@ -403,22 +491,15 @@ function ExpenseDetailPopup({ item, onClose }) {
           )}
 
           <p><b>💰 Số tiền:</b> {localItem.amount.toLocaleString()}₫</p>
-
-          <p className="flex items-center gap-2">
-            <b>📅 Ngày:</b> {new Date(localItem.date).toLocaleDateString("vi-VN")}
-          </p>
-
-          <p>
-            <b>🗓 Tháng/Năm:</b> {localItem.month + 1} / {localItem.year}
-          </p>
+          <p><b>📅 Ngày:</b> {new Date(localItem.date).toLocaleDateString("vi-VN")}</p>
+          <p><b>🗓 Tháng/Năm:</b> {localItem.month + 1} / {localItem.year}</p>
         </div>
 
-        {/* CLOSE BUTTON */}
         <div className="text-right mt-4">
           <button
             onClick={onClose}
             className={
-              "px-4 py-2 rounded-lg text-white " +
+              "px-4 py-2 rounded-lg text-white hover:brightness-110 " +
               (isSalary ? "bg-green-600" : "bg-orange-500")
             }
           >
@@ -428,5 +509,4 @@ function ExpenseDetailPopup({ item, onClose }) {
       </div>
     </div>
   );
-
 }

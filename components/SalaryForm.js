@@ -29,6 +29,12 @@ export default function SalaryForm({
   const [toast, setToast] = useState({ message: "", type: "info" });
   const modalRef = useRef();
   const [submitting, setSubmitting] = useState(false);
+  const baseBtn = `
+  flex items-center gap-2 
+  px-5 py-2.5 rounded-xl shadow-md 
+  text-white text-sm font-medium
+  hover:brightness-110 active:scale-95 transition
+`;
 
   const MAX_AMOUNT = 999_999_999_999;
 
@@ -43,7 +49,8 @@ export default function SalaryForm({
     setTimeout(() => setToast({ message: "", type: "info" }), 3000);
   };
 
-  const handleChange = (key, val) => setForm((f) => ({ ...f, [key]: val }));
+  const handleChange = (key, val) =>
+    setForm((f) => ({ ...f, [key]: val }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -135,8 +142,7 @@ export default function SalaryForm({
       <div className="flex justify-end">
         <button
           onClick={() => setOpen(true)}
-          className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg hover:brightness-110 active:scale-95 transition-all duration-200"
-        >
+          className={`${baseBtn} bg-green-500`}>
           <CirclePlus className="w-5 h-5" />
           Nhập lương
         </button>
@@ -151,13 +157,18 @@ export default function SalaryForm({
             !submitting &&
             setOpen(false)
           }
-
         >
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
 
           <div
             ref={modalRef}
-            className="relative bg-white w-11/12 max-w-md p-6 rounded-xl shadow-2xl z-10"
+            className="
+              relative w-11/12 max-w-md p-6 rounded-xl shadow-2xl z-10
+              bg-white dark:bg-gray-900
+              text-gray-800 dark:text-gray-200
+              border border-gray-200 dark:border-gray-700
+              transition-colors
+            "
             onMouseDown={(e) => e.stopPropagation()}
           >
             {/* Header */}
@@ -165,7 +176,7 @@ export default function SalaryForm({
               <h3 className="text-lg font-semibold">Nhập lương tháng</h3>
               <button
                 onClick={() => setOpen(false)}
-                className="text-gray-500 hover:text-gray-800"
+                className="text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
               >
                 ✕
               </button>
@@ -176,7 +187,14 @@ export default function SalaryForm({
               <div className="relative">
                 <FileText className="absolute right-3 top-3 text-gray-400 w-5 h-5" />
                 <input
-                  className="w-full border p-2 rounded"
+                  className="
+                    w-full border p-2 rounded 
+                    bg-white dark:bg-gray-800
+                    border-gray-300 dark:border-gray-700
+                    text-gray-800 dark:text-gray-200
+                    placeholder-gray-400 dark:placeholder-gray-500
+                    transition-colors
+                  "
                   placeholder="Ghi chú (tuỳ chọn)"
                   value={form.note}
                   onChange={(e) => handleChange("note", e.target.value)}
@@ -187,7 +205,14 @@ export default function SalaryForm({
               <div className="relative">
                 <BanknoteArrowUp className="absolute right-3 top-3 text-gray-400 w-5 h-5" />
                 <input
-                  className="w-full border p-2 rounded text-left"
+                  className="
+                    w-full border p-2 rounded text-left
+                    bg-white dark:bg-gray-800
+                    border-gray-300 dark:border-gray-700
+                    text-gray-800 dark:text-gray-200
+                    placeholder-gray-400 dark:placeholder-gray-500
+                    transition-colors
+                  "
                   placeholder="Số tiền lương"
                   value={form.amount.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
                   onChange={(e) => {
@@ -200,7 +225,7 @@ export default function SalaryForm({
 
               {/* Chọn ngày */}
               <div className="flex items-center gap-3">
-                <span className="text-sm text-gray-600 flex items-center gap-1">
+                <span className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-1">
                   <CalendarDays className="w-4 h-4 text-green-500" />
                   Ngày nhận:
                 </span>
@@ -208,7 +233,14 @@ export default function SalaryForm({
                 <button
                   type="button"
                   onClick={() => setOpenCalendar(true)}
-                  className="bg-white border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-700 hover:bg-green-50 flex items-center gap-2 shadow-sm transition"
+                  className="
+                    bg-white dark:bg-gray-800 
+                    border border-gray-300 dark:border-gray-700 
+                    rounded-lg px-4 py-2 text-sm
+                    text-gray-700 dark:text-gray-200
+                    hover:bg-green-50 dark:hover:bg-green-900/20
+                    flex items-center gap-2 shadow-sm transition
+                  "
                 >
                   {new Date(form.date).toLocaleDateString("vi-VN")}
                 </button>
@@ -233,18 +265,17 @@ export default function SalaryForm({
                 </button>
               </div>
 
-              {/* Thông tin */}
-              <div className="flex justify-between items-center text-sm text-gray-500">
+              {/* Info */}
+              <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
                 <span>
                   Tháng: {Number(selectedMonth) + 1} / {selectedYear}
                 </span>
                 <span className="italic">
-                  Ngày nhận:{" "}
-                  {new Date(form.date).toLocaleDateString("vi-VN")}
+                  Ngày nhận: {new Date(form.date).toLocaleDateString("vi-VN")}
                 </span>
               </div>
 
-              {/* Nút */}
+              {/* Buttons */}
               <div className="flex gap-2">
                 <button
                   type="submit"
@@ -269,7 +300,12 @@ export default function SalaryForm({
                 <button
                   type="button"
                   onClick={() => !submitting && setOpen(false)}
-                  className="flex-1 bg-gray-200 py-2 rounded hover:bg-gray-300"
+                  className="
+                    flex-1 bg-gray-200 dark:bg-gray-700 
+                    text-gray-800 dark:text-gray-200
+                    py-2 rounded hover:bg-gray-300 dark:hover:bg-gray-600
+                    transition
+                  "
                 >
                   Hủy
                 </button>
@@ -282,9 +318,10 @@ export default function SalaryForm({
       {/* Calendar Popup */}
       {openCalendar && (
         <Popup onClose={() => setOpenCalendar(false)}>
-          <h3 className="text-lg font-semibold mb-3 text-gray-800">
+          <h3 className="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-200">
             Chọn ngày nhận lương
           </h3>
+
           <DatePicker
             selected={new Date(form.date)}
             onChange={(d) => {
@@ -304,7 +341,10 @@ export default function SalaryForm({
           <div className="flex justify-end mt-3">
             <button
               onClick={() => setOpenCalendar(false)}
-              className="bg-green-600 text-white px-4 py-1.5 rounded-lg hover:brightness-110"
+              className="
+                bg-green-600 text-white px-4 py-1.5 rounded-lg 
+                hover:brightness-110 transition
+              "
             >
               Đóng
             </button>
@@ -316,7 +356,7 @@ export default function SalaryForm({
 }
 
 /* =======================
-   Popup dùng chung
+   Popup dùng chung (DARK)
 ======================= */
 function Popup({ children, onClose }) {
   return (
@@ -325,7 +365,13 @@ function Popup({ children, onClose }) {
       onClick={onClose}
     >
       <div
-        className="bg-white p-6 rounded-2xl shadow-2xl"
+        className="
+          bg-white dark:bg-gray-900 
+          p-6 rounded-2xl shadow-2xl 
+          border border-gray-200 dark:border-gray-700
+          text-gray-800 dark:text-gray-200
+          transition-colors
+        "
         onClick={(e) => e.stopPropagation()}
       >
         {children}
