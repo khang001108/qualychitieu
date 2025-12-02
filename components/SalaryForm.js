@@ -110,7 +110,7 @@ export default function SalaryForm({
 
     try {
       const ref = await addDoc(collection(db, "expenses"), newSalary);
-      setItems((prev) => [{ id: ref.id, ...newSalary }, ...prev]);
+      // setItems((prev) => [{ id: ref.id, ...newSalary }, ...prev]);
 
       setForm({
         note: "",

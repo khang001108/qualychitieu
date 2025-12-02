@@ -107,7 +107,7 @@ export default function ExpenseForm({
 
     try {
       const ref = await addDoc(collection(db, "expenses"), newExpense);
-      setItems((prev) => [{ id: ref.id, ...newExpense }, ...prev]);
+      // setItems((prev) => [{ id: ref.id, ...newExpense }, ...prev]);
       setForm({
         name: "",
         amount: "",
