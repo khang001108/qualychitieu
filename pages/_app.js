@@ -41,7 +41,8 @@ export default function MyApp({ Component, pageProps }) {
 
         {/* Thay icon tuỳ ý — để icon nào trong /public */}
         {/* <link rel="icon" href="/growth-business-64.ico" /> */}
-        <link rel="icon" href="/wallet-45-64.ico" />
+        <link rel="icon" href="/wallet-110-64.ico" />
+        {/* <link rel="icon" href="/wallet-45-64.ico" /> */}
         {/* <link rel="icon" href="/board-money-64.ico" /> */}
 
         {/* hoặc PNG nếu thích */}

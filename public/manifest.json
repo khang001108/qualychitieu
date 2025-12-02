@@ -3,12 +3,12 @@
   "short_name": "Chi Tiêu",
   "icons": [
     {
-      "src": "/money-192.png",
+      "src": "/wallet-110-256.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "256x256"
     },
     {
-      "src": "/money-512.png",
+      "src": "/wallet-110-512.png",
       "type": "image/png",
       "sizes": "512x512"
     }

@@ -10,8 +10,8 @@ export default function Document() {
         <link rel="manifest" href="/manifest.json" />
 
         {/* 📌 App Icons */}
-        <link rel="icon" href="/money-192.png" />
-        <link rel="apple-touch-icon" href="/money-192.png" />
+        <link rel="icon" href="/wallet-110-256.png" />
+        <link rel="apple-touch-icon" href="/wallet-110-256.png" />
 
         {/* 📌 Màu thanh trạng thái (Android/iOS) */}
         <meta name="theme-color" content="#2563eb" />
