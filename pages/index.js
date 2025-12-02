@@ -196,8 +196,9 @@ export default function Home() {
           text-center w-80 sm:w-96 
           border border-gray-100 dark:border-gray-700
         ">
-          <h2 className="text-3xl font-extrabold mb-4">Một ngày mới⭐,</h2>
-          <h2 className="text-3xl font-extrabold mb-5">một cơ hội mới🌈!</h2>
+          <h2 className="text-3xl font-extrabold mb-4">Làm chủ chi tiêu 💰
+</h2>
+          <h2 className="text-3xl font-extrabold mb-5">làm chủ cuộc sống🌱</h2>
           <a
             href="/login"
             className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-6 py-3 rounded-2xl font-semibold shadow-lg hover:scale-105 transition"
