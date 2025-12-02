@@ -78,8 +78,8 @@ export default function MyApp({ Component, pageProps }) {
             <button
               onClick={toggleDark}
               className="
-                text-gray-600 dark:text-gray-300
-                hover:text-yellow-400 dark:hover:text-yellow-200
+                text-purple-600 dark:text-yellow-600
+                hover:text-purple-400 dark:hover:text-yellow-200
                 transition-all
               "
             >
@@ -90,7 +90,7 @@ export default function MyApp({ Component, pageProps }) {
             <button
               onClick={installApp}
               className="
-                text-gray-600 dark:text-gray-300
+                text-green-600 dark:text-green-600
                 hover:text-green-400 dark:hover:text-green-300
                 transition-all
               "
