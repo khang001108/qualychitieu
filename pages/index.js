@@ -57,9 +57,26 @@ export default function Home() {
 
   // Theo dõi đăng nhập
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (u) => setUser(u || null));
+    const unsub = onAuthStateChanged(auth, async (u) => {
+      if (!u) return setUser(null);
+
+      const { getDoc, doc } = await import("firebase/firestore");
+      const userRef = doc(db, "users", u.uid);
+      const snap = await getDoc(userRef);
+
+      if (snap.exists()) {
+        setUser({
+          ...u,
+          ...snap.data(),   // avatar, avatarColor, displayName
+        });
+      } else {
+        setUser(u);
+      }
+    });
+
     return () => unsub();
   }, []);
+
 
   // Load dữ liệu tháng
   useEffect(() => {
@@ -197,7 +214,7 @@ export default function Home() {
           border border-gray-100 dark:border-gray-700
         ">
           <h2 className="text-3xl font-extrabold mb-4">Làm chủ chi tiêu 💰
-</h2>
+          </h2>
           <h2 className="text-3xl font-extrabold mb-5">làm chủ cuộc sống🌱</h2>
           <a
             href="/login"
@@ -286,11 +303,10 @@ export default function Home() {
               </span>
 
               <span
-                className={`font-semibold ${
-                  remainingYear < 0
+                className={`font-semibold ${remainingYear < 0
                     ? "text-red-600"
                     : "text-green-600 dark:text-green-400"
-                }`}
+                  }`}
               >
                 {showRemaining
                   ? `${remainingYear.toLocaleString()}₫`
