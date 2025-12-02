@@ -119,7 +119,7 @@ export default function SalaryForm({
       });
 
       setOpen(false);
-      showToast("💵 Đã thêm lương tháng này!", "success");
+      showToast("💵 Bạn đã thêm 1 khoản lương mới!", "success");
     } catch (err) {
       console.error("Lỗi thêm:", err);
       showToast("Thêm thất bại", "error");
