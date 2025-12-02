@@ -130,8 +130,8 @@ export default function ExpenseList({
             </span>
           </h2>
 
-          <div className="flex items-center gap-3 w-full">
-            {/* TRÁI: Nút ghim + Sort */}
+          <div className="flex flex-wrap items-center gap-3 w-full">
+            {/* TRÁI: Ghim + Sort */}
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setOpenPinned(true)}
@@ -143,13 +143,7 @@ export default function ExpenseList({
               <select
                 value={sortType}
                 onChange={(e) => setSortType(e.target.value)}
-                className="
-        border rounded-xl text-sm px-3 py-2
-        bg-white dark:bg-gray-800
-        border-gray-300 dark:border-gray-600
-        text-gray-700 dark:text-gray-200
-        transition-colors
-      "
+                className="border rounded-xl text-sm px-3 py-2 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 transition-colors"
               >
                 <option value="newest">⤵ Cuối tháng</option>
                 <option value="oldest">⤴ Đầu tháng</option>
@@ -158,8 +152,8 @@ export default function ExpenseList({
               </select>
             </div>
 
-            {/* PHẢI: Toggle */}
-            <div className="flex items-center gap-2 ml-auto">
+            {/* PHẢI: Toggle — rớt xuống dòng, căng sang phải */}
+            <div className="flex items-center gap-2 ml-auto w-full sm:w-auto justify-end mt-1 sm:mt-0">
               <span className="text-sm text-gray-600 dark:text-gray-300">
                 Chỉ xem lương
               </span>
@@ -171,27 +165,17 @@ export default function ExpenseList({
                   onChange={() => setFilterSalary((v) => !v)}
                   className="sr-only peer"
                 />
-                <div
-                  className="
-          w-11 h-6 bg-gray-300 peer-focus:outline-none
-          rounded-full peer dark:bg-gray-700
-          peer-checked:bg-green-500 transition
-        "
-                ></div>
 
-                <div
-                  className="
-          absolute left-1 top-1 w-4 h-4 bg-white rounded-full
-          transition-all peer-checked:translate-x-5
-        "
-                ></div>
+                <div className="w-11 h-6 bg-gray-300 rounded-full dark:bg-gray-700 peer-checked:bg-green-500 transition"></div>
+                <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all peer-checked:translate-x-5"></div>
               </label>
             </div>
           </div>
 
+
         </div>
         {/* LIST */}
-        <div className="max-h-80 overflow-y-auto pr-2 space-y-3">
+        <div className="max-h-[65vh] overflow-y-auto pr-2 space-y-3">
           {filtered.map((item) => {
             const isSalary = item.type === "salary";
 
@@ -199,14 +183,7 @@ export default function ExpenseList({
               <div
                 key={item.id}
                 onClick={() => setSelectedItem(item)}
-                className="
-                  relative flex justify-between items-center p-4 rounded-2xl 
-                  shadow-sm hover:shadow-md border cursor-pointer
-                  bg-gradient-to-r from-white to-orange-50
-                  dark:from-gray-800 dark:to-gray-700
-                  border-gray-100 dark:border-gray-700
-                  transition-all duration-300
-                "
+                className="relative flex justify-between items-center p-4 rounded-2xl  shadow-sm hover:shadow-md border cursor-pointer bg-gradient-to-r from-white to-orange-50 dark:from-gray-800 dark:to-gray-700 border-gray-100 dark:border-gray-700 transition-all duration-300"
               >
                 {/* Left Border */}
                 <div
