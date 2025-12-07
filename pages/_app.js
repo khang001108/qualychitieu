@@ -2,7 +2,7 @@
 import "../styles/globals.css";
 import "react-datepicker/dist/react-datepicker.css";
 import * as Tooltip from "@radix-ui/react-tooltip";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Sun, Moon, Download, MoreVertical, X, RefreshCcw } from "lucide-react";
 import Head from "next/head";
 
@@ -10,6 +10,27 @@ export default function MyApp({ Component, pageProps }) {
   const [dark, setDark] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [installPrompt, setInstallPrompt] = useState(null);
+
+  const menuRef = useRef(null);
+  const buttonRef = useRef(null);
+
+  // CLICK OUTSIDE → CLOSE MENU
+  useEffect(() => {
+    function handleClick(e) {
+      if (!showMenu) return;
+
+      const menu = menuRef.current;
+      const btn = buttonRef.current;
+
+      // Nếu click KHÔNG nằm trong menu và KHÔNG nằm trong nút mở menu → đóng menu
+      if (menu && !menu.contains(e.target) && btn && !btn.contains(e.target)) {
+        setShowMenu(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [showMenu]);
 
   // Load theme
   useEffect(() => {
@@ -20,7 +41,6 @@ export default function MyApp({ Component, pageProps }) {
     }
   }, []);
 
-  // Toggle Dark Mode
   const toggleDark = () => {
     setDark((prev) => {
       const next = !prev;
@@ -30,7 +50,6 @@ export default function MyApp({ Component, pageProps }) {
     });
   };
 
-  // PWA install
   useEffect(() => {
     const handler = (e) => {
       e.preventDefault();
@@ -54,13 +73,13 @@ export default function MyApp({ Component, pageProps }) {
       </Head>
 
       <Tooltip.Provider>
-        {/* CONTAINER CHUNG: NÚT + MENU */}
+        {/* CONTAINER MENU */}
         <div className="fixed bottom-5 left-5 z-[9999] flex flex-col items-start gap-3">
 
-          
-          {/* MENU BONG BÓNG */}
+          {/* MENU */}
           {showMenu && (
             <div
+              ref={menuRef}
               className="
                 flex flex-col gap-4 p-3
                 rounded-2xl shadow-xl
@@ -73,11 +92,7 @@ export default function MyApp({ Component, pageProps }) {
                 onClick={toggleDark}
                 color="text-purple-600 dark:text-yellow-400"
               >
-                {dark ? (
-                  <Sun className="w-5 h-5" />
-                ) : (
-                  <Moon className="w-5 h-5" />
-                )}
+                {dark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </MenuButton>
 
               <MenuButton
@@ -96,8 +111,9 @@ export default function MyApp({ Component, pageProps }) {
             </div>
           )}
 
-          {/* NÚT BẬT MENU */}
+          {/* BUTTON OPEN/CLOSE MENU */}
           <button
+            ref={buttonRef}
             onClick={() => setShowMenu(!showMenu)}
             className="
               text-gray-600 dark:text-gray-300
@@ -105,11 +121,7 @@ export default function MyApp({ Component, pageProps }) {
               transition
             "
           >
-            {showMenu ? (
-              <X className="w-7 h-7" />
-            ) : (
-              <MoreVertical className="w-7 h-7" />
-            )}
+            {showMenu ? <X className="w-7 h-7" /> : <MoreVertical className="w-7 h-7" />}
           </button>
         </div>
 
@@ -119,7 +131,6 @@ export default function MyApp({ Component, pageProps }) {
   );
 }
 
-// Component nút menu để code gọn hơn
 function MenuButton({ onClick, children, color }) {
   return (
     <button

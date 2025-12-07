@@ -137,7 +137,7 @@ export default function ExpenseList({
                 onClick={() => setOpenPinned(true)}
                 className="flex items-center gap-1 bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-xl shadow"
               >
-                📌 Đã ghim ({items.filter((i) => i.pinned).length})
+                📌 Ghim ({items.filter((i) => i.pinned).length})
               </button>
 
               <select
