@@ -97,9 +97,7 @@ export default function ExpenseList({
      Filter Salary Only
   ========================== */
   const filtered = useMemo(() => {
-    return filterSalary
-      ? sorted.filter((i) => i.type === "salary")
-      : sorted;
+    return filterSalary ? sorted.filter((i) => i.type === "salary") : sorted;
   }, [sorted, filterSalary]);
 
   const remove = async (id) => {
@@ -171,8 +169,6 @@ export default function ExpenseList({
               </label>
             </div>
           </div>
-
-
         </div>
         {/* LIST */}
         <div className="max-h-[65vh] overflow-y-auto pr-2 space-y-3">
@@ -183,7 +179,24 @@ export default function ExpenseList({
               <div
                 key={item.id}
                 onClick={() => setSelectedItem(item)}
-                className="relative flex justify-between items-center p-4 rounded-2xl  shadow-sm hover:shadow-md border cursor-pointer bg-gradient-to-r from-white to-orange-50 dark:from-gray-800 dark:to-gray-700 border-gray-100 dark:border-gray-700 transition-all duration-300"
+                className={`
+                  relative flex justify-between items-center p-4 rounded-2xl shadow-sm hover:shadow-md border cursor-pointer
+                  transition-all duration-300
+
+                  ${
+                    isSalary
+                      ? `
+                      bg-gradient-to-r from-white to-green-50 
+                      dark:bg-gradient-to-r dark:from-[#102a1a] dark:to-[#0b1f14]
+                      border-green-200 dark:border-green-700
+                    `
+                      : `
+                      bg-gradient-to-r from-white to-orange-50 
+                      dark:bg-gradient-to-r dark:from-[#3b2412] dark:to-[#291a0d]
+                      border-orange-200 dark:border-orange-700
+                    `
+                  }
+                `}
               >
                 {/* Left Border */}
                 <div
@@ -213,7 +226,9 @@ export default function ExpenseList({
                       {isSalary ? item.note || "Lương tháng" : item.name}
 
                       {item.pinned && (
-                        <span className="text-yellow-400 text-lg animate-bounce-slow">📌</span>
+                        <span className="text-yellow-400 text-lg animate-bounce-slow">
+                          📌
+                        </span>
                       )}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -435,9 +450,10 @@ function ExpenseDetailPopup({ item, onClose }) {
           bg-white dark:bg-gray-900
           text-gray-800 dark:text-gray-200
           transition-colors duration-300
-          ${isSalary
-            ? "border-green-500 dark:border-green-400 bg-green-50 dark:bg-green-900/30"
-            : "border-orange-500 dark:border-orange-400 bg-orange-50 dark:bg-orange-900/30"
+          ${
+            isSalary
+              ? "border-green-500 dark:border-green-400 bg-green-50 dark:bg-green-900/30"
+              : "border-orange-500 dark:border-orange-400 bg-orange-50 dark:bg-orange-900/30"
           }
         `}
       >
@@ -462,14 +478,25 @@ function ExpenseDetailPopup({ item, onClose }) {
         {/* DETAILS */}
         <div className="space-y-2">
           {isSalary ? (
-            <p><b>📄 Ghi chú:</b> {localItem.note || "Không có"}</p>
+            <p>
+              <b>📄 Ghi chú:</b> {localItem.note || "Không có"}
+            </p>
           ) : (
-            <p><b>🏷 Tên:</b> {localItem.name}</p>
+            <p>
+              <b>🏷 Tên:</b> {localItem.name}
+            </p>
           )}
 
-          <p><b>💰 Số tiền:</b> {localItem.amount.toLocaleString()}₫</p>
-          <p><b>📅 Ngày:</b> {new Date(localItem.date).toLocaleDateString("vi-VN")}</p>
-          <p><b>🗓 Tháng/Năm:</b> {localItem.month + 1} / {localItem.year}</p>
+          <p>
+            <b>💰 Số tiền:</b> {localItem.amount.toLocaleString()}₫
+          </p>
+          <p>
+            <b>📅 Ngày:</b>{" "}
+            {new Date(localItem.date).toLocaleDateString("vi-VN")}
+          </p>
+          <p>
+            <b>🗓 Tháng/Năm:</b> {localItem.month + 1} / {localItem.year}
+          </p>
         </div>
 
         <div className="text-right mt-4">
