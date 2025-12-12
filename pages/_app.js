@@ -32,6 +32,18 @@ export default function MyApp({ Component, pageProps }) {
     return () => document.removeEventListener("mousedown", handleClick);
   }, [showMenu]);
 
+  // SERVICE WORKER UPDATE → RELOAD PAGE
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      const handler = () => window.location.reload();
+      navigator.serviceWorker.addEventListener("controllerchange", handler);
+      return () => {
+        navigator.serviceWorker.removeEventListener("controllerchange", handler);
+      };
+    }
+  }, []);
+
+
   // Load theme
   useEffect(() => {
     const saved = localStorage.getItem("theme");
