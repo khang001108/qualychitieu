@@ -80,51 +80,59 @@ export default function Home() {
 
   // Load dữ liệu tháng
   useEffect(() => {
-    if (!user) return setItems([]);
+    if (!user?.uid) {
+      setItems([]);
+      return;
+    }
 
-    import("firebase/firestore").then(
-      ({ collection, query, where, onSnapshot }) => {
-        const q = query(
-          collection(db, "expenses"),
-          where("userId", "==", user.uid),
-          where("month", "==", Number(selectedMonth)),
-          where("year", "==", Number(selectedYear))
-        );
+    let unsub;
 
-        const unsub = onSnapshot(q, (snap) => {
-          setItems(
-            snap.docs.map((d) => ({
-              id: d.id,
-              ...d.data(),
-            }))
-          );
-        });
+    (async () => {
+      const { collection, query, where, onSnapshot } =
+        await import("firebase/firestore");
 
-        return unsub;
-      }
-    );
-  }, [user, selectedMonth, selectedYear]);
+      const q = query(
+        collection(db, "expenses"),
+        where("userId", "==", user.uid),
+        where("month", "==", Number(selectedMonth)),
+        where("year", "==", Number(selectedYear))
+      );
+
+      unsub = onSnapshot(q, (snap) => {
+        setItems(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      });
+    })();
+
+    return () => unsub && unsub();
+  }, [user?.uid, selectedMonth, selectedYear]);
 
   // Load dữ liệu năm
   useEffect(() => {
-    if (!user) return setYearItems([]);
+    if (!user?.uid) {
+      setYearItems([]);
+      return;
+    }
 
-    import("firebase/firestore").then(
-      ({ collection, query, where, onSnapshot }) => {
-        const q = query(
-          collection(db, "expenses"),
-          where("userId", "==", user.uid),
-          where("year", "==", Number(selectedYear))
-        );
+    let unsub;
 
-        const unsub = onSnapshot(q, (snap) => {
-          setYearItems(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
-        });
+    (async () => {
+      const { collection, query, where, onSnapshot } =
+        await import("firebase/firestore");
 
-        return unsub;
-      }
-    );
-  }, [user, selectedYear]);
+      const q = query(
+        collection(db, "expenses"),
+        where("userId", "==", user.uid),
+        where("year", "==", Number(selectedYear))
+      );
+
+      unsub = onSnapshot(q, (snap) => {
+        setYearItems(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      });
+    })();
+
+    return () => unsub && unsub();
+  }, [user?.uid, selectedYear]);
+
 
   // Scroll top
   useEffect(() => {
@@ -143,10 +151,9 @@ export default function Home() {
   // Logout
   const handleLogout = async () => {
     await signOut(auth);
-    setItems([]);
-    setYearItems([]);
     setUser(null);
   };
+
 
   // Xóa dữ liệu tháng
   const handleDeleteAll = async () => {
@@ -175,7 +182,7 @@ export default function Home() {
         msg: `Đã xóa toàn bộ dữ liệu tháng ${selectedMonth + 1}/${selectedYear}`,
       });
 
-      setItems([]);
+      // setItems([]);
     } catch (err) {
       setToast({ type: "error", msg: "❌ Lỗi khi xóa dữ liệu!" });
     }
@@ -213,8 +220,7 @@ export default function Home() {
           text-center w-80 sm:w-96 
           border border-gray-100 dark:border-gray-700
         ">
-          <h2 className="text-3xl font-extrabold mb-4">Làm chủ chi tiêu 💰
-          </h2>
+          <h2 className="text-3xl font-extrabold mb-4">Làm chủ chi tiêu 💰</h2>
           <h2 className="text-3xl font-extrabold mb-5">làm chủ cuộc sống🌱</h2>
           <a
             href="/login"
@@ -304,8 +310,8 @@ export default function Home() {
 
               <span
                 className={`font-semibold ${remainingYear < 0
-                    ? "text-red-600"
-                    : "text-green-600 dark:text-green-400"
+                  ? "text-red-600"
+                  : "text-green-600 dark:text-green-400"
                   }`}
               >
                 {showRemaining
